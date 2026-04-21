@@ -1,26 +1,458 @@
 @import "tailwindcss";
 
+/* Tailwind v4 Yapılandırması */
+@theme {
+  --color-background: #0a0a0a;
+  --color-foreground: #ededed;
+}
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Geist', ui-serif, Georgia, serif;
+}
+
+/* --- Tiptap & Prose Özelleştirmeleri --- */
+
+/* Not: Editor.tsx içinde EditorContent bileşenine "prose" sınıfı verdiğini varsayıyoruz */
+
+.prose {
+  max-width: none;
+}
+
+/* Başlıklar (Headers) */
+.prose h1 {
+  color: #D4AF37 !important;
+  font-size: 2.5rem !important;
+  font-weight: 800 !important;
+  margin-top: 2rem !important;
+  margin-bottom: 1.5rem !important;
+  letter-spacing: -0.02em !important;
+  line-height: 1.2 !important;
+}
+
+.prose h2 {
+  color: #D4AF37 !important;
+  font-size: 1.875rem !important;
+  font-weight: 700 !important;
+  margin-top: 2rem !important;
+  margin-bottom: 1rem !important;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2) !important;
+  padding-bottom: 0.5rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+}
+
+.prose h3 {
+  color: rgba(212, 175, 55, 0.8) !important;
+  font-size: 1.5rem !important;
+  font-weight: 600 !important;
+  margin-top: 1.5rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+/* SPOT (Blockquote) Bileşeni */
+.prose blockquote {
+  border-left: 4px solid #8B0000 !important;
+  background-color: rgba(139, 0, 0, 0.05) !important;
+  padding: 1.5rem !important;
+  margin: 2.5rem 0 !important;
+  font-style: italic !important;
+  position: relative !important;
+  quotes: none !important;
+}
+
+.prose blockquote p {
+  margin: 0 !important;
+  color: #E0E0E0 !important;
+}
+
+.prose blockquote::before {
+  content: "SPOT BİLGİ";
+  position: absolute;
+  top: -12px;
+  left: 10px;
+  font-size: 10px;
+  background-color: #8B0000;
+  color: white;
+  padding: 2px 10px;
+  font-weight: bold;
+  font-style: normal;
+  letter-spacing: 0.15em;
+  z-index: 10;
+}
+
+/* --- Yardımcı Sınıflar --- */
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+::selection {
+  background-color: #8B0000;
+  color: white;
+}
+
+.toolbar-btn {
+  @apply px-3 py-1 border border-[#D4AF37]/20 text-[#D4AF37]/60 text-[10px] font-mono hover:border-[#D4AF37] hover:text-[#D4AF37] transition-all uppercase tracking-widest bg-black/40;
+}
+
+.divider {
+  width: 1px;
+  height: 1.5rem;
+  background-color: rgba(212, 175, 55, 0.2);
+  margin: 0 0.5rem;
+  align-self: center;
+}
+
+/* Başlıklar ve SPOT için ortak seçiciler (.prose ve .tiptap) */
+
+.prose h1, .tiptap h1 {
+  color: #D4AF37 !important;
+  font-size: 2.5rem !important;
+  font-weight: 800 !important;
+  margin-top: 2rem !important;
+  margin-bottom: 1.5rem !important;
+  line-height: 1.2 !important;
+}
+
+.prose h2, .tiptap h2 {
+  color: #D4AF37 !important;
+  font-size: 1.875rem !important;
+  font-weight: 700 !important;
+  margin-top: 2rem !important;
+  margin-bottom: 1rem !important;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2) !important;
+  padding-bottom: 0.5rem !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.1em !important;
+}
+
+.prose h3, .tiptap h3 {
+  color: rgba(212, 175, 55, 0.8) !important;
+  font-size: 1.5rem !important;
+  font-weight: 600 !important;
+  margin-top: 1.5rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+/* SPOT (Blockquote) - Yazma ve Okuma Modu */
+.prose blockquote, .tiptap blockquote {
+  border-left: 4px solid #8B0000 !important;
+  background-color: rgba(139, 0, 0, 0.05) !important;
+  padding: 1.5rem !important;
+  margin: 2.5rem 0 !important;
+  font-style: italic !important;
+  position: relative !important;
+  min-height: 3rem; /* Boşken bile görünmesi için */
+}
+
+/* Editörde imlecin görünmesi için padding ayarı */
+.tiptap blockquote p {
+  margin: 0 !important;
+}
+
+.prose blockquote::before, .tiptap blockquote::before {
+  content: "SPOT BİLGİ";
+  position: absolute;
+  top: -12px;
+  left: 10px;
+  font-size: 10px;
+  background-color: #8B0000;
+  color: white;
+  padding: 2px 10px;
+  font-weight: bold;
+  font-style: normal;
+  letter-spacing: 0.15em;
+  z-index: 10;
+}
+
+/* Editörün odaklandığındaki mavi çizgiyi kaldırmak için */
+.tiptap:focus {
+  outline: none;
+}
+
+/* Liste Stilleri */
+.prose ul, .tiptap ul {
+  list-style-type: disc !important;
+  padding-left: 1.5rem !important;
+  margin: 1rem 0 !important;
+}
+
+.prose ol, .tiptap ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5rem !important;
+  margin: 1rem 0 !important;
+}
+
+.prose li, .tiptap li {
+  margin-bottom: 0.5rem !important;
+  color: #E0E0E0 !important;
+}
+
+/* Dinamik Görsel Boyutlandırma */
+.tiptap img[width="25%"] { width: 25%; }
+.tiptap img[width="50%"] { width: 50%; }
+.tiptap img[width="100%"] { width: 100%; }
+
+/* Undo/Redo ve Toolbar butonları için min-width */
+.toolbar-btn {
+  min-width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  @apply bg-black/40 border border-[#D4AF37]/10 rounded-none text-xs;
+}
+
+/* Listelerin görünmesini zorla */
+.prose ul, .tiptap ul {
+  list-style-type: disc !important;
+  padding-left: 1.5rem !important;
+  margin: 1.5rem 0 !important;
+}
+
+.prose ol, .tiptap ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5rem !important;
+  margin: 1.5rem 0 !important;
+}
+
+.prose li, .tiptap li {
+  @apply mb-2 pl-2 text-[#E0E0E0]/80 leading-relaxed;
+}
+
+/* Genel Spot Yapısı */
+.prose blockquote, .tiptap blockquote {
+  @apply my-10 p-6 italic relative border-l-4 bg-white/5 shadow-inner;
+  quotes: none !important;
+}
+
+/* 1. SPOT (Sınav Odaklı) */
+blockquote[data-type="spot"], .tiptap blockquote.spot-blockquote {
+  border-color: #8B0000 !important;
+  background-color: rgba(139, 0, 0, 0.05) !important;
+}
+blockquote[data-type="spot"]::before {
+  content: "SPOT BİLGİ";
+  @apply absolute -top-3 left-3 text-[9px] bg-[#8B0000] text-white px-2 py-0.5 font-bold tracking-widest;
+}
+
+/* 2. KLİNİK (Vaka Odaklı) */
+blockquote[data-type="klinik"] {
+  border-color: #008B8B !important;
+  background-color: rgba(0, 139, 139, 0.05) !important;
+}
+blockquote[data-type="klinik"]::before {
+  content: "KLİNİK NOT";
+  @apply absolute -top-3 left-3 text-[9px] bg-[#008B8B] text-white px-2 py-0.5 font-bold tracking-widest;
+}
+
+/* 3. DİKKAT (Önemli Not) */
+blockquote[data-type="dikkat"] {
+  border-color: #D4AF37 !important;
+  background-color: rgba(212, 175, 55, 0.05) !important;
+}
+blockquote[data-type="dikkat"]::before {
+  content: "ÖNEMLİ";
+  @apply absolute -top-3 left-3 text-[9px] bg-[#D4AF37] text-black px-2 py-0.5 font-bold tracking-widest;
+}
+
+.prose img, .tiptap img {
+  @apply h-auto inline-block align-middle;
+}
+
+/* globals.css */
+.tiptap img {
+  @apply transition-all duration-200 cursor-pointer border-2 border-transparent;
+}
+
+/* Görsel seçildiğinde (Prose/Tiptap seçimi) */
+.tiptap img.ProseMirror-selectednode {
+  @apply border-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.4)] outline-none;
+}
+
+/* Görsel Hizalama Yardımcıları */
+.tiptap img[style*="margin-left: 0"] { margin-left: 0 !important; margin-right: auto !important; }
+.tiptap img[style*="margin-right: 0"] { margin-right: 0 !important; margin-left: auto !important; }
+.tiptap img[style*="margin-left: auto; margin-right: auto"] { margin-left: auto !important; margin-right: auto !important; }
+
+/* Görsele tıklandığında (seçildiğinde) oluşacak efekt */
+.tiptap img.ProseMirror-selectednode {
+  outline: 3px solid #D4AF37; /* Altın sarısı çerçeve */
+  outline-offset: 4px;
+  @apply shadow-[0_0_20px_rgba(212,175,55,0.4)];
+}
+
+.occlusion-hidden {
+  @apply opacity-0 cursor-help;
+}
+.occlusion-visible {
+  @apply opacity-100;
+}
+
+.atlas-pin {
+  @apply shadow-[0_0_10px_rgba(139,0,0,0.8)] animate-pulse;
+}
+
+/* Atlas İğne Efektleri */
+.atlas-pin {
+  @apply absolute w-4 h-4 bg-[#8B0000] border-2 border-[#D4AF37] rounded-full 
+         -translate-x-1/2 -translate-y-1/2 transition-all duration-300;
+  box-shadow: 0 0 15px rgba(139, 0, 0, 0.6);
+}
+
+.atlas-pin:active {
+  transform: translate(-50%, -50%) scale(1.5);
+}
+
+/* Occlusion (Gizleme) Katmanı */
+.pin-label {
+  @apply absolute left-6 top-1/2 -translate-y-1/2 bg-black/90 border border-[#D4AF37]/30 
+         text-[#D4AF37] text-[10px] px-2 py-1 whitespace-nowrap pointer-events-none 
+         opacity-0 transition-opacity duration-300;
+}
+
+/* Tıklanınca veya Mod Değişince Görünür Olma */
+.pin-label.visible {
+  @apply opacity-100;
+}
+
+/* Atlas ve Matbaa Ortak Etiket Stili */
+.tag-pill {
+  @apply bg-[#8B0000]/10 text-[#8B0000] border border-[#8B0000]/20 
+         px-2 py-0.5 text-[9px] font-bold uppercase tracking-tighter 
+         transition-all hover:bg-[#8B0000] hover:text-white;
+}
+
+/* Safari iPad Scroll ve Seçim Koruması */
+.canvas-container {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none; /* Safari'de zoom ve pan hareketlerini kontrol etmek için */
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  overscroll-behavior: none; /* Sayfa sonu sekmesini engeller */
+}
+
+/* Excalidraw UI Özelleştirme */
+.excalidraw {
+  --color-primary: #8B0000 !important;
+  --color-primary-darker: #5a0000 !important;
+  --bg-color: #0A0A0A !important;
+}
+
+/* iPad Safari UI Refinement */
+@layer base {
+  html, body {
+    /* Sayfanın yukarı/aşağı çekildiğinde beyaz boşluk vermesini engeller */
+    overscroll-behavior: none; 
+    /* Metin seçimini sadece gerekli yerlerde açar */
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Inputlarda seçimi geri açalım */
+  input, textarea, [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  /* Safari'deki input gölgelerini ve varsayılan stilleri temizler */
+  input, textarea {
+    -webkit-appearance: none;
+    border-radius: 0;
+  }
+
+  /* Kaydırma çubuklarını asilleştir */
+  ::-webkit-scrollbar {
+    width: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0A0A0A;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #8B0000;
+  }
+}
+
+.ai-processing {
+  animation: pulse-red 2s infinite;
+  border: 1px solid #8B0000;
+  box-shadow: 0 0 20px rgba(139, 0, 0, 0.2);
+}
+
+@keyframes pulse-red {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+@keyframes vital-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.02); }
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.vital-pulse {
+  animation: vital-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.medical-glow {
+  text-shadow: 0 0 12px currentColor;
+}
+
+.monitor-scan {
+  position: relative;
+  overflow: hidden;
+}
+
+.monitor-scan::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(to bottom, transparent, rgba(212, 175, 55, 0.03), transparent);
+  animation: scanline 4s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes vital-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+.vital-pulse {
+  animation: vital-pulse 2s infinite ease-in-out;
+}
+
+.vital-glow {
+  text-shadow: 0 0 10px currentColor;
+}
+
+.monitor-scan {
+  position: relative;
+  overflow: hidden;
+}
+
+.monitor-scan::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(to bottom, transparent, rgba(212, 175, 55, 0.03), transparent);
+  animation: scanline 6s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
 }
