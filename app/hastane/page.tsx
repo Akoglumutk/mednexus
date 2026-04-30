@@ -214,7 +214,7 @@ function MenuView({ stage, setStage, branch, setBranch, onStart }: any) {
     'ANESTEZİ', 'ÇOCUK CERRAHİ', 'ÇOCUK PSİKİYATRİ', 'OFTALMOLOJİ', 
     'KBB', 'NÖROŞİRUJİ', 'ORTOPEDİ', 'GERİATRİ', 'KVC', 
     'PLASTİK CERRAHİ', 'NÜKLEER TIP', 'GENETİK', 'RADYASYON ONKOLOJİSİ', 
-    'GÖĞÜS CERRAHİSİ'
+    'GÖĞÜS CERRAHİSİ', 'DAHİLİYE'
   ];
 
   return (
