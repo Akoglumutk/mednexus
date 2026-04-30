@@ -173,12 +173,24 @@ export default function DivineHospital() {
   );
 }
 
-function VitalItem({ label, value, unit, status = 'normal' }: any) {
-  const statusClass = {
+// app/hastane/page.tsx içindeki VitalItem bileşeni
+
+interface VitalItemProps {
+  label: string;
+  value: string | number;
+  unit: string;
+  status?: 'normal' | 'warning' | 'critical';
+}
+
+function VitalItem({ label, value, unit, status = 'normal' }: VitalItemProps) {
+  // Nesneyi bir sabit olarak tanımlayıp tipini belirtiyoruz
+  const statusConfig: Record<'normal' | 'warning' | 'critical', string> = {
     normal: 'text-[#D4AF37]',
     warning: 'text-orange-500',
     critical: 'text-[#8B0000] animate-pulse'
-  }[status];
+  };
+
+  const statusClass = statusConfig[status];
 
   return (
     <div className="flex flex-col items-center px-5 border-r border-white/5 last:border-none">
@@ -190,6 +202,7 @@ function VitalItem({ label, value, unit, status = 'normal' }: any) {
     </div>
   );
 }
+
 
 function MenuView({ stage, setStage, branch, setBranch, onStart }: any) {
   const branches = ['KARDİYOLOJİ', 'GÖĞÜS HASTALIKLARI', 'ACİL TIP', 'DAHİLİYE', 'NÖROLOJİ', 'GENEL CERRAHİ', 'PEDİATRİ', 'KADIN DOĞUM'];
