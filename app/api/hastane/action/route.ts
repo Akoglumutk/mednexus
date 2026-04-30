@@ -26,7 +26,7 @@ export async function POST(req: Request) {
 
     const result = await medicalModel.generateContent(systemPrompt);
     const response = await result.response;
-    let text = response.text().trim();
+    const text = response.text();
     
     // Markdown bloklarını temizle
     text = text.replace(/```json|```/g, "").trim();
