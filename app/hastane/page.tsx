@@ -204,6 +204,7 @@ function VitalItem({ label, value, unit, status = 'normal' }: VitalItemProps) {
 }
 
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function MenuView({ stage, setStage, branch, setBranch, onStart }: any) {
   // Eski kodundaki tam liste:
   // MenuView içindeki branches listesini gönderdiğin tam liste ile güncelle
