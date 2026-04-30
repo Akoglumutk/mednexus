@@ -205,38 +205,66 @@ function VitalItem({ label, value, unit, status = 'normal' }: VitalItemProps) {
 
 
 function MenuView({ stage, setStage, branch, setBranch, onStart }: any) {
-  const branches = ['KARDİYOLOJİ', 'GÖĞÜS HASTALIKLARI', 'ACİL TIP', 'DAHİLİYE', 'NÖROLOJİ', 'GENEL CERRAHİ', 'PEDİATRİ', 'KADIN DOĞUM'];
+  // Eski kodundaki tam liste:
+  const branches = [
+    'MİKROBİYOLOJİ', 'HEMATOLOJİ', 'RADYOLOJİ', 'GÖĞÜS HASTALIKLARI', 
+    'KARDİYOLOJİ', 'GASTROENTEROLOJİ', 'ENDOKRİNOLOJİ', 'KADIN DOĞUM', 
+    'GENEL CERRAHİ', 'ÜROLOJİ', 'NEFROLOJİ', 'NÖROLOJİ', 'PSİKİYATRİ', 
+    'DERMATOLOJİ', 'ADLİ TIP', 'ROMATOLOJİ', 'FTR', 'PEDİATRİ', 'ACİL', 
+    'ANESTEZİ', 'ÇOCUK CERRAHİ', 'ÇOCUK PSİKİYATRİ', 'OFTALMOLOJİ', 
+    'KBB', 'NÖROŞİRUJİ', 'ORTOPEDİ', 'GERİATRİ', 'KVC', 
+    'PLASTİK CERRAHİ', 'NÜKLEER TIP', 'GENETİK', 'RADYASYON ONKOLOJİSİ', 
+    'GÖĞÜS CERRAHİSİ'
+  ];
 
   return (
-    <main className="min-h-screen bg-[#010102] flex items-center justify-center p-6">
-      <div className="max-w-xl w-full border border-[#D4AF37]/20 bg-black/60 p-10 backdrop-blur-xl shadow-2xl">
-        <h1 className="text-[#D4AF37] text-xl font-bold tracking-[0.5em] uppercase text-center mb-12 border-b border-[#D4AF37]/10 pb-6">Divine Theater</h1>
-        
-        <div className="space-y-10">
-          <div>
-            <p className="text-[8px] text-white/30 uppercase tracking-[0.3em] mb-4 text-center">Hekimlik Seviyesi</p>
+    <main className="min-h-screen bg-[#010102] flex items-center justify-center p-6 overflow-y-auto">
+      <div className="max-w-2xl w-full border border-[#D4AF37]/20 bg-black/40 p-12 backdrop-blur-xl my-12 shadow-[0_0_50px_rgba(0,0,0,1)]">
+        <header className="flex flex-col md:flex-row justify-between items-center gap-6 border-b border-[#D4AF37]/10 pb-8 mb-12">
+          <h1 className="text-[#D4AF37] text-2xl font-bold italic tracking-[0.3em] uppercase text-center underline underline-offset-8 decoration-[#D4AF37]/20">
+            Divine Theater
+          </h1>
+        </header>
+
+        <div className="space-y-12">
+          {/* KADEME SEÇİMİ */}
+          <section>
+            <p className="text-[10px] text-white/30 uppercase tracking-[0.3em] mb-4">Kademeyi Mühürle</p>
             <div className="grid grid-cols-4 gap-2">
               {['STAJYER', 'INTERN', 'DHY', 'UZMAN'].map(s => (
-                <button key={s} onClick={() => setStage(s)} className={`py-3 text-[8px] border tracking-widest transition-all ${stage === s ? 'bg-[#D4AF37] text-black border-[#D4AF37]' : 'border-white/10 text-white/30 hover:border-white/20'}`}>{s}</button>
+                <button 
+                  key={s} 
+                  onClick={() => setStage(s)} 
+                  className={`py-3 text-[8px] border tracking-widest transition-all ${stage === s ? 'bg-[#D4AF37] text-black border-[#D4AF37] shadow-[0_0_15px_rgba(212,175,55,0.3)]' : 'border-white/10 text-white/40 hover:border-white/30'}`}
+                >
+                  {s}
+                </button>
               ))}
             </div>
-          </div>
+          </section>
 
-          <div>
-            <p className="text-[8px] text-white/30 uppercase tracking-[0.3em] mb-4 text-center">Poliklinik</p>
-            <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+          {/* POLİKLİNİK SEÇİMİ - TAM LİSTE */}
+          <section>
+            <p className="text-[10px] text-white/30 uppercase tracking-[0.3em] mb-4">Poliklinik Seçimi</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-[350px] overflow-y-auto pr-4 custom-scrollbar">
               {branches.map(b => (
-                <button key={b} onClick={() => setBranch(b)} className={`py-3 text-[8px] border transition-all ${branch === b ? 'border-[#D4AF37] text-[#D4AF37]' : 'border-white/5 text-white/20 hover:bg-white/5'}`}>{b}</button>
+                <button 
+                  key={b} 
+                  onClick={() => setBranch(b)} 
+                  className={`py-3 text-[8px] border transition-all truncate px-2 tracking-tighter ${branch === b ? 'border-[#8B0000] text-[#8B0000] bg-[#8B0000]/5 shadow-[inset_0_0_10px_rgba(139,0,0,0.2)]' : 'border-white/5 text-white/20 hover:text-white/50 hover:border-white/10'}`}
+                >
+                  {b}
+                </button>
               ))}
             </div>
-          </div>
+          </section>
 
           <button 
             onClick={onStart} 
             disabled={!branch} 
-            className="w-full bg-[#D4AF37] text-black py-4 font-bold uppercase text-[10px] tracking-[0.5em] disabled:opacity-20 transition-all hover:tracking-[0.6em]"
+            className="w-full bg-[#D4AF37] text-black py-5 font-bold uppercase text-[10px] tracking-[0.5em] disabled:opacity-10 transition-all hover:bg-[#D4AF37]/90 active:scale-95 shadow-[0_0_30px_rgba(212,175,55,0.15)]"
           >
-            SİMÜLASYONU BAŞLAT
+            SAHNEYİ AÇ
           </button>
         </div>
       </div>
