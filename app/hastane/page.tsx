@@ -206,6 +206,7 @@ function VitalItem({ label, value, unit, status = 'normal' }: VitalItemProps) {
 
 function MenuView({ stage, setStage, branch, setBranch, onStart }: any) {
   // Eski kodundaki tam liste:
+  // MenuView içindeki branches listesini gönderdiğin tam liste ile güncelle
   const branches = [
     'MİKROBİYOLOJİ', 'HEMATOLOJİ', 'RADYOLOJİ', 'GÖĞÜS HASTALIKLARI', 
     'KARDİYOLOJİ', 'GASTROENTEROLOJİ', 'ENDOKRİNOLOJİ', 'KADIN DOĞUM', 
