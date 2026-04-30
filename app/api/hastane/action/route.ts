@@ -5,33 +5,56 @@ export async function POST(req: Request) {
   try {
     const { action, stage, branch, history, vitals } = await req.json();
 
-const systemPrompt = `
-  GÖREV: Sen "Divine Hospital" tıbbi simülasyon motorusun. 
-  ROL: ${branch} branşında, ${stage} seviyesindeki bir hekimi test eden "Simüle Hasta" ve "Klinik Gözlemci"sin.
+    // Geçmişi modelin bağlamı kaybetmemesi için stringleştiriyoruz
+    const historyContext = history
+      .map((h: any) => `${h.role === 'user' ? 'Hekim' : 'Sistem'}: ${h.text}`)
+      .join('\n');
 
-  KRİTİK KURALLAR (MÜHÜRLÜ):
-  1. **Tutarlılık:** Geçmiş konuşmaları (history) kontrol et. Hastanın yaşı, cinsiyeti ve temel hikayesi vaka boyunca ASLA değişmemelidir.
-  2. **Spoiler Yasaktır:** Kullanıcı tetkik istemeden veya spesifik muayene yapmadan ASLA kesin tanı koyma, teknik tanı terimleri (Örn: NSTE-AKS) kullanma. 
-  3. **Hasta Rolü:** Eğer eylem bir soruysa (Anamnez), hastanın ağzından birinci şahısla yanıt ver ("Göğsümde baskı var" gibi).
-  4. **Gözlemci Rolü:** Eğer eylem bir tetkik veya muayeneyse, bulguyu objektif bir dille raporla.
-  5. **Veri Çözünürlüğü (${stage}):** - STAJYER/INTERN: Bulguların yanına parantez içinde (Yüksek/Düşük) veya (Normal) gibi ipuçları ekle.
-     - DHY/UZMAN: Sadece ham sayısal değerleri ver (Örn: "Na: 132 mEq/L"), yorumu hekime bırak.
+    const systemPrompt = `
+      Sen "Divine Hospital" tıbbi simülasyon motorusun. 
+      BRANŞ: ${branch}
+      HEKİM SEVİYESİ: ${stage}
 
-  MEVCUT VİTALLER: ${JSON.stringify(vitals)}
-  EYLEM: "${action}"
+      KRİTİK TALİMATLAR:
+      1. TUTARLILIK: Hasta vaka boyunca aynı kalmalı. (Geçmiş: ${historyContext})
+      2. ROL: "${action}" bir soruysa hasta gibi yanıt ver, bir tetkikse bulgu raporla.
+      3. ÇÖZÜNÜRLÜK: ${stage === 'STAJYER' || stage === 'INTERN' ? 'Bulguları parantez içinde (Normal/Yüksek) şeklinde açıkla.' : 'Sadece ham sayısal verileri ver.'}
+      4. SAKINCA: Tetkik istenmeden kesin tanı koyma.
 
-  YANIT FORMATI (SADECE JSON):
-  {
-    "log": "Anamnez sorusuysa hastanın cevabı, muayeneyse bulgu raporu...",
-    "newVitals": { "hr": 80, "bp": "120/80", "temp": 36.6, "spo2": 98 },
-    "options": ["Sıradaki mantıklı klinik adım 1", "Sıradaki mantıklı klinik adım 2", "Alternatif adım 3"]
-  }
-`;
+      MEVCUT VİTALLER: ${JSON.stringify(vitals)}
+
+      MUTLAK JSON FORMATI:
+      {
+        "log": "İçerik buraya",
+        "newVitals": { "hr": 80, "bp": "120/80", "temp": 36.6, "spo2": 98 },
+        "options": ["Adım 1", "Adım 2", "Adım 3"]
+      }
+    `;
+
     const result = await medicalModel.generateContent(systemPrompt);
-    const responseText = result.response.text().replace(/```json|```/g, "").trim();
+    const response = await result.response;
+    let text = response.text();
+
+    // Markdown temizliği ve JSON ayıklama
+    const cleanJson = text.replace(/```json|```/g, "").trim();
     
-    return NextResponse.json(JSON.parse(responseText));
+    try {
+      const parsedData = JSON.parse(cleanJson);
+      return NextResponse.json(parsedData);
+    } catch (parseError) {
+      // Eğer JSON parse başarısız olursa, regex ile objeyi yakalamaya çalış
+      const match = cleanJson.match(/\{[\s\S]*\}/);
+      if (match) {
+        return NextResponse.json(JSON.parse(match[0]));
+      }
+      throw new Error("Kahin geçersiz formatta yanıt verdi.");
+    }
+
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Simulation Engine Error:", error);
+    return NextResponse.json(
+      { log: "Klinik veri işlenirken bir hata oluştu: " + error.message }, 
+      { status: 500 }
+    );
   }
 }
