@@ -3,7 +3,9 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { action, stage, branch, history, vitals } = await req.json();
+    // Eğer kullanmıyorsan değişkeni sil veya prompt içine dahil et
+    const { action, stage, branch, vitals } = await req.json(); 
+    // history'yi sildik çünkü logda unused uyarısı veriyordu.
 
     const systemPrompt = `
       ROL: Divine Hospital tıbbi simülasyon motorusun.
