@@ -40,6 +40,7 @@ export default function DivineHospital() {
     setIsLoading(true);
 
     try {
+      console.log("Gönderilen veri:", { action: actionName, stage, branch, vitals });
       const res = await fetch('/api/hastane/action', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
