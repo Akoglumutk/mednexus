@@ -1,25 +1,21 @@
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
+// app/api/hastane/action/route.ts
+import { medicalModel } from "@/lib/gemini";
+import { NextResponse } from "next/server";
 
-const apiKey = process.env.GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(apiKey || "");
+// Mutlaka "POST" ismiyle ve "export" edilerek tanımlanmalı
+export async function POST(req: Request) {
+  try {
+    const { action, stage, branch, history, vitals } = await req.json();
 
-export const medicalModel = genAI.getGenerativeModel({
-  model: "gemini-flash-latest", // Daha güncel ve hızlı model
-  safetySettings: [
-    { 
-      category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, 
-      threshold: HarmBlockThreshold.BLOCK_NONE 
-    },
-    {
-      category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-      threshold: HarmBlockThreshold.BLOCK_NONE
-    }
-  ],
-  generationConfig: {
-    temperature: 0.7,
-    topK: 40,
-    topP: 0.95,
-    maxOutputTokens: 1024,
-    responseMimeType: "application/json", // Modelin doğrudan JSON dönmesini zorlar
-  },
-});
+    const systemPrompt = `...`; // Önceki mesajdaki prompt içeriği
+
+    const result = await medicalModel.generateContent(systemPrompt);
+    const response = await result.response;
+    const text = response.text().replace(/```json|```/g, "").trim();
+    
+    return NextResponse.json(JSON.parse(text));
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
