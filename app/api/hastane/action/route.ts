@@ -11,11 +11,17 @@ export async function POST(req: Request) {
       ROL: Divine Hospital tıbbi simülasyon motorusun.
       BRANŞ: ${branch} | KADEME: ${stage}
       GÖREV: Kullanıcının "${action}" hamlesine klinik yanıt üret.
-      
+  
+      YANIT FORMATI (KESİNLİKLE BU JSON ŞEMASI):
+      {
+        "log": "Klinik açıklama metni...",
+        "newVitals": { "hr": 80, "bp": "120/80", "temp": 36.6, "spo2": 98 },
+        "options": ["Seçenek 1", "Seçenek 2", "Seçenek 3"]
+      }
+
       KURALLAR:
-      1. Hasta tutarlı olmalı. Mevcut Vitaller: ${JSON.stringify(vitals)}.
-      2. Yanıt kesinlikle JSON formatında olmalı.
-      3. ${stage === 'STAJYER' ? 'Bulguları parantez içinde (Yüksek/Düşük) olarak açıkla.' : 'Sadece ham değerleri ver.'}
+      1. Mevcut Vitaller: ${JSON.stringify(vitals)}.
+      2. ${stage === 'STAJYER' ? 'Bulguları parantez içinde (Yüksek/Düşük) olarak açıkla.' : 'Sadece ham değerleri ver.'}
     `;
 
     const result = await medicalModel.generateContent(systemPrompt);
