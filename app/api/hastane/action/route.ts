@@ -1,21 +1,34 @@
-// app/api/hastane/action/route.ts
 import { medicalModel } from "@/lib/gemini";
 import { NextResponse } from "next/server";
 
-// Mutlaka "POST" ismiyle ve "export" edilerek tanımlanmalı
 export async function POST(req: Request) {
   try {
     const { action, stage, branch, history, vitals } = await req.json();
 
-    const systemPrompt = `...`; // Önceki mesajdaki prompt içeriği
+    const systemPrompt = `
+      ROL: Divine Hospital tıbbi simülasyon motorusun.
+      BRANŞ: ${branch} | KADEME: ${stage}
+      GÖREV: Kullanıcının "${action}" hamlesine klinik yanıt üret.
+      
+      KURALLAR:
+      1. Hasta tutarlı olmalı. Mevcut Vitaller: ${JSON.stringify(vitals)}.
+      2. Yanıt kesinlikle JSON formatında olmalı.
+      3. ${stage === 'STAJYER' ? 'Bulguları parantez içinde (Yüksek/Düşük) olarak açıkla.' : 'Sadece ham değerleri ver.'}
+    `;
 
     const result = await medicalModel.generateContent(systemPrompt);
     const response = await result.response;
-    const text = response.text().replace(/```json|```/g, "").trim();
+    let text = response.text().trim();
+    
+    // Markdown bloklarını temizle
+    text = text.replace(/```json|```/g, "").trim();
     
     return NextResponse.json(JSON.parse(text));
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Kahin Error:", error);
+    return NextResponse.json({ 
+      log: "Klinik veri işlenirken hata oluştu: " + error.message,
+      options: ["Tekrar Dene"] 
+    }, { status: 500 });
   }
 }
-
