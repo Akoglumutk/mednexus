@@ -44,9 +44,9 @@ export async function POST(req: Request) {
     // 4. Groq'a İstek Atıyoruz
     const completion = await groq.chat.completions.create({
       messages: messages,
-      model: "llama3-70b-8192", // Tıp ve mantık için en iyi model
+      model: "llama-3.3-70b-versatile", // ESKİSİ: "llama3-70b-8192"
       temperature: 0.7,
-      response_format: { type: "json_object" } // JSON formatını garantiye alır
+      response_format: { type: "json_object" } 
     });
 
     const text = completion.choices[0]?.message?.content || "{}";
