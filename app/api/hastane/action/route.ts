@@ -1,51 +1,62 @@
-import { medicalModel } from "@/lib/gemini";
+import { groq } from "@/lib/groq";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    // 1. History'yi yeniden destructure ediyoruz
-    const { action, stage, branch, vitals, history } = await req.json(); 
+    const { action, stage, branch, vitals, history } = await req.json();
 
-    // 2. Geçmiş logları Kahin'in okuyabileceği bir metne çeviriyoruz
-    const historyText = history && history.length > 0
-      ? history.map((h: any) => `${h.role === 'user' ? 'Hekim' : 'Klinik'}: ${h.text}`).join('\n')
-      : "Henüz hamle yapılmadı. Bu yeni bir vaka.";
-
-    // 3. Promptu geçmiş ve JSON şeması ile güçlendiriyoruz
-    const systemPrompt = `
-      ROL: Divine Hospital tıbbi simülasyon motorusun.
+    // 1. Sistem Yönergesi (Sadece kuralları içerir)
+    const systemPrompt = {
+      role: "system",
+      content: `ROL: Divine Hospital tıbbi simülasyon motorusun.
       BRANŞ: ${branch} | KADEME: ${stage}
       
-      VAKA GEÇMİŞİ (ÖNEMLİ):
-      ${historyText}
-      
-      GÖREV: Yukarıdaki vaka geçmişini dikkate alarak, kullanıcının son hamlesi olan "${action}" aksiyonuna klinik bir yanıt üret.
-      
-      YANIT FORMATI (KESİNLİKLE AŞAĞIDAKİ JSON ŞEMASINA UY):
+      YANIT FORMATI: Kesinlikle ve SADECE JSON dön. Asla markdown kullanma.
       {
         "log": "Klinik durum veya tetkik sonucu açıklaması...",
         "newVitals": { "hr": 80, "bp": "120/80", "temp": 36.6, "spo2": 98 },
-        "options": ["Sonraki Mantıklı Hamle 1", "Sonraki Mantıklı Hamle 2", "Sonraki Mantıklı Hamle 3"]
+        "options": ["Mantıklı Hamle 1", "Mantıklı Hamle 2", "Mantıklı Hamle 3"]
       }
 
       KURALLAR:
-      1. Hasta ve vaka öyküsü tutarlı olmalı. Mevcut Vitaller: ${JSON.stringify(vitals)}.
-      2. Asla markdown kullanma, sadece saf JSON döndür.
-      3. ${stage === 'STAJYER' ? 'Bulguları parantez içinde (Yüksek/Düşük) olarak açıkla.' : 'Sadece ham değerleri ver.'}
-    `;
+      1. Hasta tutarlı olmalı. Mevcut Vitaller: ${JSON.stringify(vitals)}.
+      2. ${stage === 'STAJYER' ? 'Bulguları (Yüksek/Düşük) diye açıkla.' : 'Sadece ham değerleri ver.'}`
+    };
 
-    const result = await medicalModel.generateContent(systemPrompt);
-    const response = await result.response;
-    let text = response.text().trim();
-    
-    // Markdown bloklarını temizle (Garanti olması için)
-    text = text.replace(/```json|```/g, "").trim();
+    // 2. Geçmiş Logları Groq Formatına Çeviriyoruz
+    const messages: any[] = [systemPrompt];
+
+    if (history && history.length > 0) {
+      history.forEach((h: any) => {
+        messages.push({
+          role: h.role === 'user' ? 'user' : 'assistant',
+          content: h.text
+        });
+      });
+    }
+
+    // 3. Kullanıcının Son Hamlesini Ekliyoruz
+    messages.push({
+      role: "user",
+      content: action
+    });
+
+    // 4. Groq'a İstek Atıyoruz
+    const completion = await groq.chat.completions.create({
+      messages: messages,
+      model: "llama3-70b-8192", // Tıp ve mantık için en iyi model
+      temperature: 0.7,
+      response_format: { type: "json_object" } // JSON formatını garantiye alır
+    });
+
+    const text = completion.choices[0]?.message?.content || "{}";
     
     return NextResponse.json(JSON.parse(text));
+
   } catch (error: any) {
-    console.error("Kahin Error:", error);
+    console.error("Groq Error:", error);
     return NextResponse.json({ 
-      log: "Klinik veri işlenirken hata oluştu: " + error.message,
+      log: "Simülasyon bağlantısı koptu veya hasta verisi işlenemedi. Lütfen tekrar dene.",
       options: ["Tekrar Dene", "Vakayı Sıfırla"] 
     }, { status: 500 });
   }
