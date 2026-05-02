@@ -31,18 +31,6 @@ export default function RootLayout({
         <title>MedNexus</title>
       </head>
       <body className="min-h-full flex flex-col bg-[#050505] text-[#E0E0E0] font-serif relative overflow-x-hidden">
-        
-        {/* UNIVERSAL BACKGROUND LAYER */}
-        {/* public/image_a4031c.jpg dosyasını referans alır */}
-        <div 
-          className="fixed inset-0 z-0 pointer-events-none opacity-[0.12] bg-cover bg-center bg-no-repeat grayscale"
-          style={{ 
-            backgroundImage: "url('/image_a4031c.jpg')", 
-            maskImage: 'linear-gradient(to bottom, black 10%, transparent 90%)',
-            WebkitMaskImage: 'linear-gradient(to bottom, black 10%, transparent 90%)'
-          }}
-        />
-
         {/* UNIVERSAL TEXTURE LAYER */}
         <div className="fixed inset-0 z-[1] pointer-events-none opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
 
