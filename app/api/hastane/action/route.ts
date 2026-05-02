@@ -6,21 +6,31 @@ export async function POST(req: Request) {
     const { action, stage, branch, vitals, history } = await req.json();
 
     // 1. Sistem Yönergesi (Sadece kuralları içerir)
+    // 1. Sistem Yönergesi
     const systemPrompt = {
       role: "system",
       content: `ROL: Divine Hospital tıbbi simülasyon motorusun.
       BRANŞ: ${branch} | KADEME: ${stage}
       
-      YANIT FORMATI: Kesinlikle ve SADECE JSON dön. Asla markdown kullanma.
+      YANIT FORMATI: Kesinlikle JSON dön. Asla markdown kullanma.
       {
-        "log": "Klinik durum veya tetkik sonucu açıklaması...",
+        "log": "Klinik durum açıklaması veya doktorun hamlesine verilen dramatik/klinik tepki...",
         "newVitals": { "hr": 80, "bp": "120/80", "temp": 36.6, "spo2": 98 },
-        "options": ["Mantıklı Hamle 1", "Mantıklı Hamle 2", "Mantıklı Hamle 3"]
+        "status": "CONTINUE", // Durum: CONTINUE, SUCCESS, FATAL_ERROR, DEATH
+        "options": {
+          "ANAMNEZ": ["Şikayetini detaylandır", "Özgeçmiş/Soygeçmiş"],
+          "MUAYENE": ["Kardiyovasküler", "Solunum", "Batın"],
+          "TETKİK": ["EKG", "PA Akciğer Grafisi", "Hemogram", "Kardiyak Panel"],
+          "TEDAVİ": ["Oksijen (Nazal)", "IV Sıvı", "Aspirin"]
+        }
       }
 
-      KURALLAR:
+      KLİNİK KURALLAR VE OYUN MEKANİĞİ:
       1. Hasta tutarlı olmalı. Mevcut Vitaller: ${JSON.stringify(vitals)}.
-      2. ${stage === 'STAJYER' ? 'Bulguları (Yüksek/Düşük) diye açıkla.' : 'Sadece ham değerleri ver.'}`
+      2. DİNAMİK SEKMELER: Seçenekleri (options) mutlaka kategorilerine göre ayırarak mantıklı 3'er/4'er hamle öner.
+      3. ÇÖMEZ HATASI (FATAL_ERROR): Eğer kullanıcı akut/acil bir durumda zaman kaybettiren saçma bir tetkik isterse (örn: Aktif MI geçiren hastaya tedavi yerine MR istemek, tansiyonu 60/40 olan hastaya antihipertansif vermek) status'ü "FATAL_ERROR" yap ve log kısmında hekimi sertçe uyararak simülasyonu bitir.
+      4. END STATES: Hasta tamamen stabilize edilip doğru taburcu kararı verilirse status'ü "SUCCESS", hasta yanlış müdahalelerle kaybedilirse "DEATH" yap.
+      5. Vitaller hamlelere gerçekçi ve anlık tepki vermelidir.`
     };
 
     // 2. Geçmiş Logları Groq Formatına Çeviriyoruz
