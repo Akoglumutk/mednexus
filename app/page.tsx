@@ -39,7 +39,7 @@ export default function Dashboard() {
       
       {/* Background Layer: Referans 1 (Gotik Pencere) - Discrete Integration */}
       <div 
-        className="fixed inset-0 z-0 pointer-events-none opacity-[0.04] bg-cover bg-center bg-no-repeat grayscale"
+        className="fixed inset-0 z-0 pointer-events-none opacity-[0.15] bg-cover bg-center bg-no-repeat grayscale"
         style={{ 
           backgroundImage: "url('/bgimg.jpeg')", // Dosya yolunun doğruluğundan emin ol
           maskImage: 'linear-gradient(to bottom, black 10%, transparent 80%)',
@@ -125,7 +125,7 @@ export default function Dashboard() {
         <footer className="mt-32 pb-12 text-center">
           <div className="w-24 h-px bg-gradient-to-right from-transparent via-[#D4AF37]/20 to-transparent mx-auto mb-8"></div>
           <p className="text-[11px] tracking-[0.6em] uppercase italic text-[#D4AF37]/30 hover:text-[#D4AF37]/60 transition-all duration-1000 cursor-default">
-            Memento Mori
+            Primum Non Necere
           </p>
         </footer>
       </div>
