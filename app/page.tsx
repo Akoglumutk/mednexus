@@ -9,7 +9,6 @@ export default function Dashboard() {
   });
   const [isEditing, setIsEditing] = useState(false);
 
-  // Tarihleri tarayıcı hafızasından yükle
   useEffect(() => {
     const saved = localStorage.getItem('mednexus-dates');
     if (saved) setExamDates(JSON.parse(saved));
@@ -25,91 +24,111 @@ export default function Dashboard() {
     return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
   };
 
-  // İsimler sadeleştirildi, Dark Academia ruhu korundu
+  // Dark Academia & Latince İsimlendirmeler
   const modules = [
-    { title: "MATBAA", desc: "Ders Notları & Mekanizmalar", href: "/scriptorium" },
-    { title: "ATLAS", desc: "Anatomi & Preparat Çalışması", href: "/atlas" },
-    { title: "KANVAS", desc: "Sonsuz Kanvas Üzerinde Bütüncül Çalışma", href: "/canvas" },
-    { title: "NABIZ", desc: "Hızlı, genel ve her yerde okuma", href: "/pulse" },
-    { title: "İMTİHAN", desc: "Çıkmış sorular külliyatı", href: "/trials" },
-    { title: "HASTANE", desc: "Vakalar ve Konsültasyonlar", href: "/hastane" },
+    { title: "CODEX", desc: "Annotationes et summaria lectionum", href: "/scriptorium" },
+    { title: "ATLAS", desc: "Exercitationes practicae et examinatio praeparationum", href: "/atlas" },
+    { title: "PALIMPSEST", desc: "Opus holisticum in tela infinita", href: "/canvas" },
+    { title: "COMPENDIUM", desc: "Celer, utilis, et ubique operatur. ", href: "/pulse" },
+    { title: "QUAESTIO", desc: "Archivum quaestionum examinationum praeteritarum", href: "/trials" },
+    { title: "CLINICUM", desc: "Simulatio casus clinici et consultationis", href: "/hastane" },
   ];
 
   return (
-    <main className="min-h-screen bg-[#0A0A0A] text-[#E0E0E0] p-6 md:p-12 font-serif selection:bg-[#8B0000]">
-      {/* Texture Overlay */}
-      <div className="fixed inset-0 pointer-events-none opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+    <main className="relative min-h-screen bg-[#050505] text-[#E0E0E0] p-6 md:p-12 font-serif selection:bg-[#8B0000]/50 overflow-x-hidden">
+      
+      {/* Background Layer: Referans 1 (Gotik Pencere) - Discrete Integration */}
+      <div 
+        className="fixed inset-0 z-0 pointer-events-none opacity-[0.04] bg-cover bg-center bg-no-repeat grayscale"
+        style={{ 
+          backgroundImage: "url('/bgimg.jpeg')", // Dosya yolunun doğruluğundan emin ol
+          maskImage: 'linear-gradient(to bottom, black 10%, transparent 80%)',
+          WebkitMaskImage: 'linear-gradient(to bottom, black 10%, transparent 80%)'
+        }}
+      />
 
-      {/* Header - Mobile Responsive Fix */}
-      <header className="max-w-6xl mx-auto mb-16 border-b border-[#D4AF37]/20 pb-10">
-        <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-8 text-center md:text-left">
-          
-          <div className="flex flex-col items-center md:items-start">
-            <h1 className="text-4xl md:text-6xl font-bold tracking-[0.2em] text-[#D4AF37] uppercase">
-              MedNexus
-            </h1>
-            <p className="mt-2 text-[10px] tracking-[0.3em] text-[#D4AF37]/50 uppercase italic">
-              Divina Architectura
-            </p>
-          </div>
+      {/* Texture & Grain Overlay */}
+      <div className="fixed inset-0 z-10 pointer-events-none opacity-[0.03] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
 
-          <div className="flex flex-col items-center md:items-end w-full md:w-auto">
-            <button 
-              onClick={() => isEditing ? saveDates() : setIsEditing(true)}
-              className="text-[10px] text-[#D4AF37]/40 hover:text-[#D4AF37] uppercase tracking-widest mb-4 transition-all"
-            >
-              {isEditing ? '[ Kaydet ]' : '[ Düzenle ]'}
-            </button>
+      <div className="relative z-20 max-w-6xl mx-auto">
+        {/* Header */}
+        <header className="mb-20 border-b border-[#D4AF37]/10 pb-12">
+          <div className="flex flex-col md:flex-row justify-between items-center md:items-end gap-10">
             
-            <div className="flex gap-8 md:gap-12">
-              <div className="flex flex-col items-center">
-                {isEditing ? (
-                  <input type="date" value={examDates.committee} onChange={(e) => setExamDates({...examDates, committee: e.target.value})} className="bg-transparent border-b border-[#8B0000] text-[#8B0000] text-sm focus:outline-none mb-2"/>
-                ) : (
-                  <span className="text-4xl font-light text-[#8B0000] leading-none">{getDaysRemaining(examDates.committee)}</span>
-                )}
-                <span className="text-[9px] uppercase tracking-[0.2em] text-[#8B0000]/60 mt-1">Komite</span>
-              </div>
+            <div className="flex flex-col items-center md:items-start group">
+              <h1 className="text-5xl md:text-7xl font-bold tracking-[0.25em] text-[#D4AF37] uppercase transition-all duration-700 hover:tracking-[0.3em]">
+                MedNexus
+              </h1>
+              <p className="mt-3 text-[11px] tracking-[0.4em] text-[#D4AF37]/40 uppercase italic">
+                Divina Architectura
+              </p>
+            </div>
+
+            <div className="flex flex-col items-center md:items-end min-w-[200px]">
+              <button 
+                onClick={() => isEditing ? saveDates() : setIsEditing(true)}
+                className="text-[9px] text-[#D4AF37]/30 hover:text-[#D4AF37] uppercase tracking-[0.4em] mb-6 transition-all duration-300"
+              >
+                {isEditing ? '● Confirma' : '● Editio'}
+              </button>
               
-              <div className="flex flex-col items-center">
-                {isEditing ? (
-                  <input type="date" value={examDates.final} onChange={(e) => setExamDates({...examDates, final: e.target.value})} className="bg-transparent border-b border-[#D4AF37] text-[#D4AF37] text-sm focus:outline-none mb-2"/>
-                ) : (
-                  <span className="text-4xl font-light text-[#D4AF37] leading-none">{getDaysRemaining(examDates.final)}</span>
-                )}
-                <span className="text-[9px] uppercase tracking-[0.2em] text-[#D4AF37]/60 mt-1">Final</span>
+              <div className="flex gap-12">
+                <div className="flex flex-col items-center group">
+                  {isEditing ? (
+                    <input type="date" value={examDates.committee} onChange={(e) => setExamDates({...examDates, committee: e.target.value})} className="bg-transparent border-b border-[#8B0000] text-[#8B0000] text-sm focus:outline-none mb-2 font-sans"/>
+                  ) : (
+                    <span className="text-5xl font-light text-[#8B0000] leading-none transition-transform group-hover:scale-110 duration-500">{getDaysRemaining(examDates.committee)}</span>
+                  )}
+                  <span className="text-[10px] uppercase tracking-[0.3em] text-[#8B0000]/50 mt-2">Comitatus</span>
+                </div>
+                
+                <div className="flex flex-col items-center group">
+                  {isEditing ? (
+                    <input type="date" value={examDates.final} onChange={(e) => setExamDates({...examDates, final: e.target.value})} className="bg-transparent border-b border-[#D4AF37] text-[#D4AF37] text-sm focus:outline-none mb-2 font-sans"/>
+                  ) : (
+                    <span className="text-5xl font-light text-[#D4AF37] leading-none transition-transform group-hover:scale-110 duration-500">{getDaysRemaining(examDates.final)}</span>
+                  )}
+                  <span className="text-[10px] uppercase tracking-[0.3em] text-[#D4AF37]/50 mt-2">Finalis</span>
+                </div>
               </div>
             </div>
           </div>
+        </header>
+
+        {/* Grid System */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {modules.map((mod) => (
+            <Link 
+              key={mod.title} 
+              href={mod.href} 
+              className="group relative p-10 bg-[#0A0A0A]/60 backdrop-blur-sm border border-[#D4AF37]/5 hover:border-[#D4AF37]/30 transition-all duration-700 overflow-hidden"
+            >
+              {/* Subtle Animated Border Accent */}
+              <div className="absolute top-0 left-0 w-[1px] h-0 group-hover:h-full bg-gradient-to-bottom from-transparent via-[#D4AF37]/40 to-transparent transition-all duration-1000"></div>
+              
+              <h2 className="text-xl font-medium text-[#D4AF37]/80 mb-3 tracking-[0.2em] uppercase group-hover:text-[#D4AF37] group-hover:translate-x-1 transition-all">
+                {mod.title}
+              </h2>
+              <p className="text-[11px] text-[#E0E0E0]/40 leading-relaxed tracking-widest uppercase italic group-hover:text-[#E0E0E0]/70 transition-colors">
+                {mod.desc}
+              </p>
+
+              {/* Minimalist Decoration */}
+              <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-10 transition-opacity duration-700">
+                <span className="text-[8px] tracking-[0.5em] text-[#D4AF37]">AD ASTRA</span>
+              </div>
+            </Link>
+          ))}
         </div>
-      </header>
 
-      {/* Grid */}
-      <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
-        {modules.map((mod) => (
-          <Link 
-            key={mod.title} 
-            href={mod.href} 
-            className="group relative p-8 md:p-10 bg-black/40 border border-[#D4AF37]/10 hover:border-[#D4AF37]/40 transition-all duration-500"
-          >
-            {/* Minimal Corner Accent */}
-            <div className="absolute top-0 left-0 w-px h-0 group-hover:h-full bg-[#D4AF37]/50 transition-all duration-700"></div>
-            
-            <h2 className="text-lg md:text-xl font-medium text-[#D4AF37] mb-2 tracking-[0.15em] uppercase group-hover:translate-x-2 transition-transform">
-              {mod.title}
-            </h2>
-            <p className="text-[11px] text-[#E0E0E0]/50 leading-relaxed tracking-wider uppercase">
-              {mod.desc}
-            </p>
-          </Link>
-        ))}
+        {/* Footer */}
+        <footer className="mt-32 pb-12 text-center">
+          <div className="w-24 h-px bg-gradient-to-right from-transparent via-[#D4AF37]/20 to-transparent mx-auto mb-8"></div>
+          <p className="text-[11px] tracking-[0.6em] uppercase italic text-[#D4AF37]/30 hover:text-[#D4AF37]/60 transition-all duration-1000 cursor-default">
+            Memento Mori
+          </p>
+        </footer>
       </div>
-
-      <footer className="max-w-6xl mx-auto mt-20 text-center opacity-20">
-        <p className="text-[10px] tracking-[0.5em] uppercase italic text-[#D4AF37]">
-          Memento Mori
-        </p>
-      </footer>
     </main>
   );
 }
