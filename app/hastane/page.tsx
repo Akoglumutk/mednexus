@@ -40,6 +40,8 @@ export default function DivineHospital() {
   const [consultantNote, setConsultantNote] = useState<string | null>(null);
   const [isConsultLoading, setIsConsultLoading] = useState(false);
 
+  const [showDecisionMenu, setShowDecisionMenu] = useState(false);
+
   // Gated Checklist State'i (Vaka takibi için)
   const [checklist, setChecklist] = useState({
     hasEKG: false,
@@ -314,46 +316,74 @@ export default function DivineHospital() {
 
       {/* ALT AKSİYON PANELİ (Mobilde kaydırma eklendi, grid boyutları optimize edildi) */}
       <footer className={`bg-black border-t border-white/10 p-4 md:p-6 z-[70] backdrop-blur-md transition-opacity duration-500 ${status !== 'CONTINUE' ? 'opacity-20 pointer-events-none' : ''}`}>
-        <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
-          
-          {/* Mobil İçin Yatayda Sıkıştırmayan Sekme Çubuğu */}
-          <nav className="flex justify-between md:justify-center gap-2 md:gap-8 border-b border-white/5 pb-2 overflow-x-auto scrollbar-hide">
-            {(Object.keys(options) as Array<keyof TabbedOptions>).map((tab) => (
-              <button 
-                key={tab} 
-                onClick={() => setActiveTab(tab)} 
-                className={`text-[8px] md:text-[9px] tracking-[0.2em] md:tracking-[0.3em] uppercase transition-all hover:text-white whitespace-nowrap px-2 pb-1 ${activeTab === tab ? 'text-[#D4AF37] border-b border-[#D4AF37] font-bold' : 'text-white/20'}`}
-              >
-                {tab}
-              </button>
-            ))}
-          </nav>
-          
-          {/* Seçenek Buton Grubu - Mobilde daha rahat dokunma alanı için grid ayarlandı */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-[140px] overflow-y-auto pr-1 custom-scrollbar">
-            {options[activeTab] && options[activeTab].length > 0 ? (
-              options[activeTab].map((opt, i) => (
+        <div className="max-w-4xl mx-auto space-y-4">
+    
+          <div className="flex justify-between items-center border-b border-white/5 pb-2">
+            {/* Mevcut Sekmeler */}
+             <nav className="flex gap-4 overflow-x-auto scrollbar-hide">
+              {(Object.keys(options) as Array<keyof TabbedOptions>).map((tab) => (
                 <button 
-                  key={i} 
-                  onClick={() => handleAction(opt)} 
-                  disabled={isLoading} 
-                  className="bg-white/[0.02] border border-white/10 hover:border-[#D4AF37]/50 py-3 px-3 text-[9px] uppercase tracking-[0.05em] text-white/70 hover:text-[#D4AF37] transition-all active:scale-98 disabled:opacity-10 text-left md:text-center truncate rounded-sm"
-                  title={opt}
+                  key={tab} 
+                  onClick={() => { setActiveTab(tab); setShowDecisionMenu(false); }} 
+                  className={`text-[8px] md:text-[9px] tracking-[0.2em] uppercase transition-all whitespace-nowrap ${!showDecisionMenu && activeTab === tab ? 'text-[#D4AF37] border-b border-[#D4AF37] pb-1' : 'text-white/20'}`}
                 >
-                  {opt}
+                  {tab}
                 </button>
-              ))
-            ) : (
-              <div className="col-span-full flex items-center justify-center py-6">
-                <span className="text-[9px] text-white/20 uppercase tracking-widest italic animate-pulse">Bekleniyor...</span>
-              </div>
-            )}
+              ))}
+            </nav>
+
+            {/* [ VAKAYI BİTİR ] BUTONU */}
+            <button
+              onClick={() => setShowDecisionMenu(!showDecisionMenu)}
+              className={`text-[8px] md:text-[9px] tracking-[0.2em] uppercase px-3 py-1.5 border transition-all ${showDecisionMenu ? 'bg-[#8B0000] border-[#8B0000] text-white animate-pulse' : 'border-[#D4AF37]/40 text-[#D4AF37] hover:bg-[#D4AF37]/5'}`}
+            >
+              [ KARAR VER ]
+            </button>
           </div>
-        </div>
-      </footer>
-    </main>
-  );
-}
+
+          {/* SEÇENEKLER ALANI */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 min-h-[100px]">
+            {showDecisionMenu ? (
+              // Nihai Karar Menüsü Açıldıysa Gösterilecek Butonlar
+              <>
+                <button 
+                  onClick={() => handleAction("[KARAR] TABURCU")}
+                  className="bg-emerald-950/20 border border-emerald-500/30 hover:border-emerald-500 py-4 px-3 text-[9px] uppercase tracking-widest text-emerald-400 transition-all rounded-sm font-bold"
+                >
+                  Semptomatik Şifa / Reçeteli Taburcu
+                </button>
+                <button 
+                  onClick={() => handleAction("[KARAR] SEVK")}
+                  className="bg-amber-950/20 border border-amber-500/30 hover:border-amber-500 py-4 px-3 text-[9px] uppercase tracking-widest text-amber-400 transition-all rounded-sm font-bold"
+                >
+                  Üst Merkeze / İleri Tetkike Sevk
+                </button>
+                <button 
+                  onClick={() => handleAction("[KARAR] YATIŞ")}
+                  className="bg-blue-950/20 border border-blue-500/30 hover:border-blue-500 py-4 px-3 text-[9px] uppercase tracking-widest text-blue-400 transition-all rounded-sm font-bold"
+                  >
+                    Klinik/Servis Takibi İçin Yatış
+                  </button>
+                </>
+              ) : (
+                // Normal Sekme Seçenekleri (Mevcut kod bloğu)
+                options[activeTab]?.map((opt, i) => (
+                  <button 
+                    key={i} 
+                    onClick={() => handleAction(opt)} 
+                    disabled={isLoading} 
+                    className="bg-white/[0.02] border border-white/10 hover:border-[#D4AF37]/50 py-3 px-3 text-[9px] uppercase text-white/70 hover:text-[#D4AF37] transition-all truncate rounded-sm"
+                  >
+                    {opt}
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        </footer>
+      </main>
+    );
+  }
 
 interface VitalItemProps {
   label: string;
