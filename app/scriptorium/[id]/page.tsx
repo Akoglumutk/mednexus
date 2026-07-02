@@ -16,10 +16,6 @@ export default function NoteDetail() {
   const [loading, setLoading] = useState(true);
   const [isPromptOpen, setIsPromptOpen] = useState(false);
 
-  // --- AI-FREE MANUEL RECALL (WORD STİLİ YORUM) STATE'LERİ ---
-  const [isRecallMode, setIsRecallMode] = useState(false);
-  const [showTextbookReference, setShowTextbookReference] = useState(false);
-
   const { handlePaste } = useAssetUpload();
 
   useEffect(() => {
@@ -68,6 +64,7 @@ export default function NoteDetail() {
     setIsPromptOpen(false);
   };
 
+  // iPad split-screen modunda başka bir uygulamadan sürükleyip bırakılan görselleri yakalar
   const onPasteHandler = async (e: React.ClipboardEvent) => {
     if (!isEditing) return;
     const url = await handlePaste(e);
@@ -96,10 +93,10 @@ export default function NoteDetail() {
       <div className="max-w-4xl mx-auto">
         <header className="mb-12 border-b border-[#D4AF37]/20 pb-6 relative">
           <button 
-            onClick={() => { if(isRecallMode) { setIsRecallMode(false); setShowTextbookReference(false); } else { router.push('/scriptorium'); } }} 
+            onClick={() => router.push('/scriptorium')} 
             className="text-[#D4AF37]/40 text-[9px] uppercase tracking-[0.3em] mb-4 hover:text-[#D4AF37] transition-colors"
           >
-            {isRecallMode ? '← AKTİF HAFIZADAN ÇIK' : '← ARŞİVE DÖN'}
+            ← ARŞİVE DÖN
           </button>
           
           {isEditing ? (
@@ -108,7 +105,7 @@ export default function NoteDetail() {
                 value={note.title} 
                 onChange={(e) => setNote({...note, title: e.target.value})}
                 placeholder="Not Başlığı..."
-                className="w-full bg-transparent text-3xl md:text-4xl text-[#D4AF37] border-none focus:outline-none font-bold italic placeholder:opacity-20"
+                className="w-full bg-transparent text-3xl md:text-4xl text-[#D4AF37] border-none focus:outline-none font-bold italic placeholder:opacity-20 focus:ring-0"
               />
               <DivineTagInput tags={note.tags || []} onChange={(newTags) => setNote({ ...note, tags: newTags })} placeholder="#Etiketler" />
             </>
@@ -120,7 +117,53 @@ export default function NoteDetail() {
           )}
         </header>
 
-        {/* --- AKTİF RECALL (MANUEL KONTROL) ODASI --- */}
-        {isRecallMode ? (
-          <div className="space-y-6 animate-in fade-in duration-300">
-            {/* iPad Yan Yana Ekran Çalışma Bilgilendirm
+        {/* SAF METİN VE DERS NOTU OKUMA ALANI */}
+        <article className="min-h-[50vh] animate-in fade-in duration-500 max-w-none prose prose-invert prose-sm md:prose-base font-serif leading-relaxed text-white/80">
+          {isEditing ? (
+            <Editor 
+              content={note.content} 
+              onChange={(val: any) => setNote({...note, content: val})} 
+            />
+          ) : (
+            <Viewer content={note.content} />
+          )}
+        </article>
+      </div>
+
+      {/* --- CİHAZ DOSTU SABİT ALT BAR (Divine Bar) --- */}
+      <footer className="fixed bottom-0 left-0 right-0 bg-[#010102]/95 border-t border-t-white/5 p-4 backdrop-blur-md z-50">
+        <div className="max-w-4xl mx-auto flex justify-between items-center gap-4">
+          {isEditing ? (
+            <div className="flex w-full justify-between items-center px-2">
+              {id !== 'new' && (
+                <button onClick={() => setIsEditing(false)} className="text-[9px] uppercase tracking-widest text-white/30 hover:text-white transition-colors">Vazgeç</button>
+              )}
+              <button 
+                onClick={handleSave} 
+                className="bg-[#D4AF37] text-black px-12 py-3 text-[9px] font-bold tracking-[0.2em] uppercase rounded-sm shadow-md active:scale-95 transition-all"
+              >
+                {id === 'new' ? 'MÜHRÜ BAS' : 'MÜHRÜ GÜNCELLE'}
+              </button>
+            </div>
+          ) : (
+            <div className="flex w-full justify-between items-center px-2">
+              <button 
+                onClick={() => setIsPromptOpen(true)} 
+                className="text-[9px] uppercase tracking-widest text-[#8B0000]/50 hover:text-[#8B0000] transition-colors"
+              >
+                İmha Et
+              </button>
+                
+              <button 
+                onClick={() => setIsEditing(true)} 
+                className="bg-[#D4AF37] text-black px-10 py-3 text-[9px] font-bold tracking-widest uppercase hover:bg-[#D4AF37]/90 rounded-sm active:scale-95 transition-transform"
+              >
+                Düzenle
+              </button>
+            </div>
+          )}
+        </div>
+      </footer>
+    </main>
+  );
+}
