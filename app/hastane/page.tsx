@@ -128,42 +128,44 @@ export default function DivineHospital() {
 
   // Konsültasyon İsteme Fonksiyonu
   const handleConsultRequest = async () => {
-    if (!targetConsult || isConsultLoading) return;
-    setIsConsultLoading(true);
-    setConsultantNote(null);
+  if (!targetConsult || isConsultLoading) return;
+  setIsConsultLoading(true);
+  setConsultantNote(null);
 
-    try {
-      const res = await fetch('/api/hastane/consult', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          branch,
-          targetConsult,
-          vitals,
-          history: logs.slice(-4).map(l => l.text),
-          currentLog: logs[logs.length - 1]?.text || ""
-        })
-      });
+  try {
+    const res = await fetch('/api/hastane/consult', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        branch,
+        targetConsult,
+        vitals,
+        history: logs.slice(-4).map(l => l.text),
+        currentLog: logs[logs.length - 1]?.text || ""
+      })
+    });
 
-      const data = await res.json();
-      setConsultantNote(data.consultantNote);
-      
-      const timestamp = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-      // Konsültasyon isteğini de zaman tüneline (Log akışına) yediriyoruz
-      setLogs(prev => [
-        ...prev,
-        { role: 'user', text: `[Konsültasyon Talebi: ${targetConsult}]`, timestamp },
-        { role: 'system', text: `Hoca Notu (${targetConsult}): "${data.consultantNote}"`, timestamp }
-      ]);
+    const data = await res.json();
+    
+    // GÜVENLİK FİLTRESİ: undefined sızıntısını engellemek için tolerans kontrolü
+    const noteFromApi = data.consultantNote || data.note || data.message || "Vakayı daha derinlemesine incelemeniz gerekiyor.";
+    setConsultantNote(noteFromApi);
+    
+    const timestamp = new Date().toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    
+    setLogs(prev => [
+      ...prev,
+      { role: 'user', text: `[Konsültasyon Talebi: ${targetConsult}]`, timestamp },
+      { role: 'system', text: `Hoca Notu (${targetConsult}): "${noteFromApi}"`, timestamp }
+    ]);
 
-    } catch (error) {
-      console.error("Konsültasyon hatası:", error);
-      setConsultantNote("Bağlantı hatası: Kıdemli hekime ulaşılamıyor.");
-    } finally {
-      setIsConsultLoading(false);
-    }
-  };
-
+  } catch (error) {
+    console.error("Konsültasyon hatası:", error);
+    setConsultantNote("Bağlantı hatası: Kıdemli hekime ulaşılamıyor.");
+  } finally {
+    setIsConsultLoading(false);
+  }
+};
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
