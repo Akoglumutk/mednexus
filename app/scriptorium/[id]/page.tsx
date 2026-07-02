@@ -84,28 +84,34 @@ export default function NoteDetail() {
   // --- TEMİZ VE ÇEVRECİ BLURTING ALGORİTMASI (CLIENT-SIDE) ---
   // Bu fonksiyon ileride Trials modülündeki toplu soru ayrıştırıcısının (parser) regex temelini oluşturacak.
   const evaluateBlurting = () => {
-    if (!note?.content || !blurtInput) return;
+  if (!note?.content || !blurtInput) return;
 
-    // HTML etiketlerini ayıklayarak sadece ham tıbbi metni alıyoruz
-    const cleanOriginal = note.content.replace(/<[^>]*>/g, ' ').toLowerCase();
-    const cleanUser = blurtInput.toLowerCase();
+  // 1. Tarayıcının kendi DOM parser'ını kullanarak HTML etiketlerini kusursuz temizliyoruz
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(note.content, 'text/html');
+  const cleanOriginal = (doc.body.textContent || doc.body.innerText || '').toLowerCase();
+  const cleanUser = blurtInput.toLowerCase();
 
-    // Tıbbi metindeki 4 harften uzun önemli kelimeleri veya fizyolojik terimleri yakalama filtresi
-    const originalWords = Array.from(new Set(cleanOriginal.match(/[a-zA-ZçğıöşüÇĞİÖŞÜ]{4,}/g) || []));
-    
-    const found: string[] = [];
-    const missing: string[] = [];
+  // 2. Tıbbi metindeki terimleri yakalamak için daha esnek bir Regex (Türkçe karakter ve tire uyumlu)
+  // 3 harften uzun kelimeleri de alalım ki "gfr", "akt", "cap" gibi kısaltmalar kaçmasın!
+  const originalWords = Array.from(
+    new Set(cleanOriginal.match(/[a-zA-ZçğıöşüÇĞİÖŞÜ/-]{3,}/g) || [])
+  );
+  
+  const found: string[] = [];
+  const missing: string[] = [];
 
-    originalWords.forEach((word: any) => {
-      if (cleanUser.includes(word)) {
-        found.push(word);
-      } else {
-        missing.push(word);
-      }
-    });
+  originalWords.forEach((word: any) => {
+    // Kelimenin tam eşleşmesini kontrol etmek için sınır kontrolü yapıyoruz
+    if (cleanUser.includes(word)) {
+      found.push(word);
+    } else {
+      missing.push(word);
+    }
+  });
 
-    setBlurtResult({ found, missing });
-  };
+  setBlurtResult({ found, missing });
+};
 
   if (loading) return <div className="min-h-screen bg-[#010102] flex items-center justify-center text-[#D4AF37] tracking-[0.3em] uppercase animate-pulse italic text-[10px]">Arşiv taranıyor...</div>;
   if (!note) return <div className="min-h-screen bg-[#010102] flex items-center justify-center text-[#8B0000] uppercase text-[10px] tracking-widest">Bilgi bulunamadı.</div>;
