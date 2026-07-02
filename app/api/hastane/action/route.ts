@@ -1,78 +1,47 @@
 import { groq } from "@/lib/groq";
-import { NextResponse } from "next/server";
-import { ChatCompletionMessageParam } from "groq-sdk/resources/chat/completions";
+import { NextResponse } from 'next/server';
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
   try {
-    const { action, stage, branch, vitals, history } = await req.json();
+    const { branch, targetConsult, vitals, history, currentLog } = await request.json();
+    
+    // Konsültan hekim simülasyonu promptu
+    const consultPrompt = `ROL: Divine Hospital kıdemli ${targetConsult} konsültanısın.
+    ${branch} biriminden bir asistan hekim, takip ettiği vaka için senden konsültasyon istiyor.
+    
+    HASTANIN ANLIK DURUMU:
+    Vitaller: ${JSON.stringify(vitals)}
+    En Son Klinik Durum (Log): ${currentLog}
+    
+    GÖREVİN:
+    Bir konsültan edasıyla, asistanı çok fazla ezmeden ama tıbbi ciddiyeti koruyarak (gerekirse hafif fırça atarak veya doğrudan hayat kurtarıcı bir tüyo vererek) durumu yorumla. Yanıtın kısa, öz ve mobil ekranda kolay okunabilir (maksimum 2-3 cümle) olmalıdır.
+    
+    YANIT FORMATI: Kesinlikle JSON olmalı, markdown içermemelidir:
+    {
+      "consultantNote": "Konsültan hekimin klinik yorumu ve asistana direktifi..."
+    }`;
 
-    // 1. Sistem Yönergesi (Sıkılaştırılmış ve Netleştirilmiş)
-    const systemPrompt: ChatCompletionMessageParam = {
-      role: "system",
-      content: `ROL: Divine Hospital tıbbi simülasyon motorusun.
-      BRANŞ: ${branch} | KADEME: ${stage}
-      
-      YANIT FORMATI: Kesinlikle JSON dön. Asla markdown kullanma.
-      {
-        "log": "Klinik durum açıklaması veya doktorun hamlesine verilen dramatik/klinik tepki...",
-        "newVitals": { "hr": 80, "bp": "120/80", "temp": 36.6, "spo2": 98 },
-        "status": "CONTINUE", // Durum: CONTINUE, SUCCESS, FATAL_ERROR, DEATH
-        "options": {
-          "ANAMNEZ": ["Şikayetini detaylandır", "Özgeçmiş/Soygeçmiş"],
-          "MUAYENE": ["Kardiyovasküler", "Solunum", "Batın"],
-          "TETKİK": ["EKG", "PA Akciğer Grafisi", "Hemogram", "Kardiyak Panel"],
-          "TEDAVİ": ["Oksijen (Nazal)", "IV Sıvı", "Aspirin"]
-        }
-      }
-
-      KLİNİK KURALLAR VE OYUN MEKANİĞİ:
-      1. Hasta tutarlı olmalı. Mevcut Vitaller: ${JSON.stringify(vitals)}.
-      2. DİNAMİK SEKMELER: Seçenekleri (options) mutlaka kategorilerine göre ayırarak mantıklı 3'er/4'er hamle öner. Mobilde sığması için seçenek metinleri kısa ve öz olmalıdır.
-      3. ÇÖMEZ HATASI (FATAL_ERROR): Eğer kullanıcı akut/acil bir durumda zaman kaybettiren saçma bir tetkik isterse (örn: Aktif MI geçiren hastaya tedavi yerine MR istemek, tansiyonu 60/40 olan hastaya antihipertansif vermek) status'ü "FATAL_ERROR" yap ve log kısmında hekimi sertçe uyararak simülasyonu bitir.
-      4. END STATES: Hasta tamamen stabilize edilip doğru taburcu kararı verilirse status'ü "SUCCESS", hasta yanlış müdahalelerle kaybedilirse "DEATH" yap.
-      5. Vitaller hamlelere gerçekçi ve anlık tepki vermelidir.`
-    };
-
-    // 2. Geçmiş Logları Tip Güvenliği ile Dönüştürme
-    const messages: ChatCompletionMessageParam[] = [systemPrompt];
-
-    if (history && Array.isArray(history)) {
-      history.forEach((h: { role: string; text: string }) => {
-        messages.push({
-          role: h.role === 'user' ? 'user' : 'assistant',
-          content: h.text
-        });
-      });
-    }
-
-    // 3. Kullanıcının Son Hamlesi
-    messages.push({
-      role: "user",
-      content: action
-    });
-
-    // 4. Groq İsteği (Daha hızlı ve kararlı yanıt için temp optimize edildi)
     const completion = await groq.chat.completions.create({
-      messages: messages,
+      messages: [
+        { role: "system", content: consultPrompt },
+        { role: "user", content: `Hocam vaka şu şekilde, geçmiş süreç: ${JSON.stringify(history?.slice(-3))}. Ne yapmamı önerirsiniz?` }
+      ],
       model: "llama-3.3-70b-versatile",
-      temperature: 0.4, // Hızlı ve kararlı tıbbi kararlar için düşürüldü
-      response_format: { type: "json_object" } 
+      temperature: 0.6,
+      response_format: { type: "json_object" }
     });
 
     const text = completion.choices[0]?.message?.content || "{}";
-    
     return NextResponse.json(JSON.parse(text));
-
-  } catch (error: any) {
-    console.error("Groq Error:", error);
-    // Arayüzün kırılmaması için hata anında da aynı şemayı besliyoruz
+    
+  } catch (error) {
+    console.error("Consultation Error:", error);
     return NextResponse.json({ 
-      log: "Simülasyon bağlantısı koptu veya hasta verisi işlenemedi. Lütfen tekrar dene.",
-      newVitals: vitals || { "hr": 0, "bp": "0/0", "temp": 0, "spo2": 0 },
-      status: "CONTINUE",
-      options: {
-        "SİSTEM": ["Tekrar Dene", "Vakayı Sıfırla"]
-      }
+      consultantNote: "Konsültan hekime şu an ulaşılamıyor (Sinyal hatası). Lütfen klinik sezgilerine güvenerek devam et." 
     }, { status: 500 });
   }
+}
+
+export async function GET() {
+  return NextResponse.json({ message: "Consult API aktif ve Divine Senior Staff hazır." });
 }
