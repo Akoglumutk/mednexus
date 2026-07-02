@@ -98,6 +98,41 @@ export async function POST(req: Request) {
     const responseData = JSON.parse(text);
 
     // 6. Oyun Sonu Koruması
+
+    if (action.startsWith("[KARAR]")) {
+    const hekimKarari = action.replace("[KARAR] ", ""); // TABURCU, SEVK veya YATIŞ
+  
+    const finalPrompt: ChatCompletionMessageParam = {
+      role: "system",
+      content: `ROL: Divine Hospital Kıdemli Hakem Kurulusun. 
+      Hekim vaka döngüsünü sonlandırdı ve hasta hakkında şu nihai kararı verdi: ${hekimKarari}.
+      
+      GÖREVİN: Tüm süreç geçmişini (history) ve hastanın son vitallerini incele. Hekimin bu kararını ve tüm simülasyon boyunca yaptığı hamleleri (doğru tetkik/tedavi, gözden kaçan semptomlar, gereksiz zaman kayıpları) tıbbi mekanizmalara göre acımasızca ve objektif olarak değerlendir.
+      
+      SEVK/TABURCU UYGUNLUK KONTROLÜ:
+      - Eğer hasta stabilse (örn: radyoterapi yan etkileri hafiflemiş, vitaller normal) ve TABURCU dediyse bu doğrudur (SUCCESS).
+      - Eğer hastada akut MI, peritonit veya ağır hiperkalemi gibi hayati bir kriz varken sevk yerine TABURCU dediyse bu bir cinayettir (DEATH).
+      - Eğer imkanları aşan bir durum varsa ve zamanında sevk kararı verdiyse bu mantıklıdır (SUCCESS).
+      
+      YANIT FORMATI: Kesinlikle şu JSON şemasına uy:
+      {
+        "log": "Hekimin genel başarısını, tıbbi mantığını, neleri iyi yaptığını ve neleri gözden kaçırdığını özetleyen, 2-3 cümlelik epikriz/hakem raporu metni.",
+        "status": "SUCCESS", // Karar doğruysa SUCCESS, hatalıysa DEATH veya FATAL_ERROR
+        "newVitals": ${JSON.stringify(vitals)},
+        "options": {}
+      }`
+    };
+
+    const completion = await groq.chat.completions.create({
+      messages: [finalPrompt, ...messages.slice(1)], // İlk sistem promptu yerine final promptu koyuyoruz
+      model: "llama-3.3-70b-versatile",
+      temperature: 0.3,
+      response_format: { type: "json_object" }
+    });
+
+    const responseData = JSON.parse(completion.choices[0]?.message?.content || "{}");
+    return NextResponse.json(responseData);
+  }
     // Eğer vaka başarıyla bittiyse veya ölümle sonuçlandıysa seçenekleri kapatıyoruz
     if (
       responseData.status === "SUCCESS" || 
