@@ -12,6 +12,10 @@ export default function TrialsEditor() {
 
   const [trial, setTrial] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Toplu Soru Modu State'leri
+  const [bulkText, setBulkText] = useState('');
+  const [isBulkMode, setIsBulkMode] = useState(false);
 
   useEffect(() => {
     if (id === 'new') {
@@ -24,6 +28,7 @@ export default function TrialsEditor() {
         subject: 'Anatomi',
         image_url: ''
       });
+      setIsBulkMode(true); // Yeni sorularda varsayılan olarak toplu modu açabiliriz
       setLoading(false);
     } else {
       fetchTrial();
@@ -36,18 +41,64 @@ export default function TrialsEditor() {
     setLoading(false);
   }
 
+  // --- AI-FREE MS WORD KİTAPÇIK PARÇALAYICI ALGORİTMASI ---
+  const handleBulkParse = () => {
+    if (!bulkText.trim()) return;
+
+    // Satırları temizle ve diziye dök
+    const lines = bulkText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    
+    let questionText = '';
+    let parsedOptions: string[] = [];
+    let correctIdx = 0;
+    let explanationText = '';
+
+    // Basit ama esnek regex kalıpları
+    const optionRegex = /^([A-Ea-e])[\s.)\-\/]+(.*)/;
+    const answerRegex = /^(cevap|doğru|ans|key)[\s.:\-]*([A-Ea-e])/i;
+
+    lines.forEach(line => {
+      const optionMatch = line.match(optionRegex);
+      const answerMatch = line.match(answerRegex);
+
+      if (answerMatch) {
+        const letter = answerMatch[2].toUpperCase();
+        correctIdx = letter.charCodeAt(0) - 65; // A=0, B=1...
+      } else if (optionMatch) {
+        parsedOptions.push(optionMatch[2]);
+      } else {
+        // Eğer ne şık ne cevapsa, sorunun gövdesine ekle (Word'deki çoklu satırlar için)
+        if (questionText) {
+          questionText += '\n' + line;
+        } else {
+          // Soru numarası varsa temizle (Örn: "1. Soru metni" -> "Soru metni")
+          questionText = line.replace(/^\d+[\s.)\-\/]+/, '');
+        }
+      }
+    });
+
+    // En az 2 şık bulunamazsa jenerik iskelet sağla patlamasın
+    if (parsedOptions.length === 0) parsedOptions = ['', '', '', ''];
+
+    setTrial((prev: any) => ({
+      ...prev,
+      question: questionText || prev.question,
+      options: parsedOptions,
+      correct_idx: correctIdx < parsedOptions.length ? correctIdx : 0,
+      explanation: explanationText || prev.explanation
+    }));
+
+    setIsBulkMode(false); // Düzenleme ve kontrol formuna geri dön
+  };
+
   const handleSave = async () => {
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Oturum bulunamadı.");
 
-      // Payload temizliği
       const { id: tId, created_at, ...cleanPayload } = trial;
-      const payload = { 
-        ...cleanPayload, 
-        user_id: user.id // Kullanıcı ID'sini kesinleştiriyoruz
-      };
+      const payload = { ...cleanPayload, user_id: user.id };
 
       let result;
       if (id === 'new') {
@@ -57,12 +108,6 @@ export default function TrialsEditor() {
       }
 
       if (result.error) throw result.error;
-      
-      if (!result.data) {
-        // RLS duvarına çarptığımızda buraya düşeriz
-        throw new Error("Güncelleme başarısız. Bu vakayı düzenleme yetkiniz olmayabilir.");
-      }
-
       router.push(`/trials/${result.data.id || id}`);
     } catch (err: any) {
       console.error("Mühürleme Hatası Detay:", err);
@@ -78,99 +123,164 @@ export default function TrialsEditor() {
 
     setLoading(true);
     const { error } = await supabase.from('trials').delete().eq('id', id);
-
-    if (!error) {
-      router.push('/trials');
-    } else {
-      alert("İmha hatası: " + error.message);
-      setLoading(false);
-    }
+    if (!error) router.push('/trials');
+    setLoading(false);
   };
 
-  if (loading || !trial) return <div className="bg-[#010102] h-screen flex items-center justify-center text-[#D4AF37] animate-pulse">KÜLLİYAT HAZIRLANIYOR...</div>;
+  if (loading || !trial) return <div className="bg-[#010102] h-screen flex items-center justify-center text-[#D4AF37] animate-pulse tracking-[0.3em] uppercase text-[10px]">KÜLLİYAT HAZIRLANIYOR...</div>;
 
   return (
     <main onPaste={async (e) => {
       const url = await handlePaste(e);
       if (url) setTrial({...trial, image_url: url});
-    }} className="min-h-screen bg-[#010102] text-[#E0E0E0] p-8 md:p-16 pb-32">
+    }} className="min-h-screen bg-[#010102] text-[#E0E0E0] p-4 md:p-12 pb-32 font-serif select-none">
       
-      <div className="max-w-4xl mx-auto space-y-12">
-        <header className="border-b border-[#D4AF37]/20 pb-6 flex justify-between items-end">
-          <h1 className="text-3xl font-bold italic tracking-widest text-[#D4AF37] uppercase">Vaka Editörü</h1>
-          <div className="flex gap-6">
-            {id !== 'new' && (
-              <button onClick={handleDelete} className="text-[10px] text-[#8B0000] hover:underline uppercase tracking-widest">
-                [ VAKAYI İMHA ET ]
+      <div className="max-w-4xl mx-auto space-y-8">
+        <header className="border-b border-[#D4AF37]/10 pb-6 flex justify-between items-end">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold italic tracking-widest text-[#D4AF37] uppercase">Vaka Editörü</h1>
+            <p className="text-[8px] text-white/30 uppercase tracking-widest mt-1 font-mono">Trials Module // Intellect Phase</p>
+          </div>
+          <div className="flex gap-4">
+            {id === 'new' && (
+              <button 
+                onClick={() => setIsBulkMode(!isBulkMode)}
+                className="text-[9px] text-[#D4AF37] border border-[#D4AF37]/20 px-3 py-1.5 bg-[#D4AF37]/5 uppercase tracking-widest rounded-sm"
+              >
+                {isBulkMode ? '[ Form Modu ]' : '[ MS Word Modu ]'}
               </button>
             )}
-            <button onClick={() => router.back()} className="text-[10px] opacity-30 hover:opacity-100 uppercase tracking-widest">
-              [ Vazgeç ]
-            </button>
+            {id !== 'new' && (
+              <button onClick={handleDelete} className="text-[9px] text-[#8B0000] hover:underline uppercase tracking-widest">[ VAKAYI İMHA ET ]</button>
+            )}
           </div>
         </header>
 
-        {/* Görsel Alanı */}
-        <section className="relative aspect-video bg-black/40 border border-white/5 flex items-center justify-center overflow-hidden">
-          {trial.image_url ? (
-            <img src={trial.image_url} className="w-full h-full object-contain" />
-          ) : (
-            <p className="text-[10px] text-white/20 uppercase italic">[ Ctrl+V ile Vaka Görseli Yapıştır ]</p>
-          )}
-        </section>
-
-        {/* Soru Metni */}
-        <textarea 
-          value={trial.question}
-          onChange={(e) => setTrial({...trial, question: e.target.value})}
-          placeholder="Klinik soruyu buraya mühürle..."
-          className="w-full bg-transparent border-l-2 border-[#D4AF37]/30 p-6 text-xl italic outline-none min-h-[120px]"
-        />
-
-        {/* Dinamik Şıklar */}
-        <div className="space-y-4">
-          <p className="text-[10px] text-[#D4AF37]/50 uppercase tracking-widest">Seçenekler & Doğru Yanıt</p>
-          {trial.options.map((opt: string, i: number) => (
-            <div key={i} className="flex gap-4 items-center">
-              <button 
-                onClick={() => setTrial({...trial, correct_idx: i})}
-                className={`w-10 h-10 border flex items-center justify-center font-bold transition-all ${trial.correct_idx === i ? 'bg-[#D4AF37] text-black border-[#D4AF37]' : 'border-white/10 text-white/20'}`}
-              >
-                {String.fromCharCode(65 + i)}
-              </button>
-              <input 
-                value={opt}
-                onChange={(e) => {
-                  const newOpts = [...trial.options];
-                  newOpts[i] = e.target.value;
-                  setTrial({...trial, options: newOpts});
-                }}
-                className="flex-1 bg-white/[0.02] border border-white/5 p-4 text-sm italic outline-none focus:border-[#D4AF37]/30"
-              />
+        {/* --- MOD A: MS WORD TOPLU KOPYALAMA ALANI --- */}
+        {isBulkMode ? (
+          <section className="space-y-4 animate-in fade-in duration-300">
+            <div className="p-4 bg-[#8B0000]/5 border border-[#8B0000]/20 rounded-sm">
+              <span className="text-[8px] block text-red-400 uppercase tracking-widest mb-1 font-mono">Kollateral Ayrıştırıcı (Bulk Engine)</span>
+              <p className="text-xs italic text-white/60">Word kitapçığından kopyaladığın soruyu, şıkları (A,B,C,D,E) ve en alta "Cevap: C" satırını ekleyerek buraya doğrudan yapıştır.</p>
             </div>
-          ))}
-          <button onClick={() => setTrial({...trial, options: [...trial.options, '']})} className="text-[9px] text-[#D4AF37]/40 uppercase">+ Şık Ekle</button>
-        </div>
+            <textarea
+              value={bulkText}
+              onChange={(e) => setBulkText(e.target.value)}
+              placeholder="Örnek:&#10;1. Aşağıdakilerden hangisi hücre membranında en çok bulunan fosfolipiddir?&#10;A) Fosfatidilkolin&#10;B) Fosfatidilinositol&#10;C) Sfingomyelin&#10;Cevap: A"
+              className="w-full h-80 bg-black/50 border border-white/10 p-4 text-xs italic text-white/80 outline-none focus:border-[#D4AF37] resize-none leading-relaxed font-sans rounded-sm"
+            />
+            <button
+              onClick={handleBulkParse}
+              className="bg-[#D4AF37] text-black text-[9px] font-bold uppercase tracking-[0.2em] px-8 py-3 rounded-sm active:scale-95 transition-transform"
+            >
+              Matrisi Ayrıştır ve Forma Dağıt
+            </button>
+          </section>
+        ) : (
+          // --- MOD B: DİNAMİK FORM VE ÖNİZLEME ALANI ---
+          <div className="space-y-8 animate-in fade-in duration-300">
+            {/* Görsel Alanı */}
+            <section className="relative aspect-video bg-black/40 border border-white/5 flex items-center justify-center overflow-hidden rounded-sm group">
+              {trial.image_url ? (
+                <>
+                  <img src={trial.image_url} className="w-full h-full object-contain" />
+                  <button onClick={() => setTrial({...trial, image_url: ''})} className="absolute top-2 right-2 bg-black/80 border border-white/10 p-2 text-[8px] text-red-500 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity">Görseli Kaldır</button>
+                </>
+              ) : (
+                <p className="text-[9px] text-white/20 uppercase tracking-widest italic">[ Cihazdan Kopyaladığın Vaka Görselini Buraya Ctrl+V İle Yapıştır ]</p>
+              )}
+            </section>
 
-        {/* Açıklama (Explanation) */}
-        <section>
-          <p className="text-[10px] text-[#D4AF37]/50 uppercase tracking-widest mb-4">Klinik Analiz (Açıklama)</p>
-          <textarea 
-            value={trial.explanation}
-            onChange={(e) => setTrial({...trial, explanation: e.target.value})}
-            className="w-full bg-black/60 border border-white/5 p-6 text-xs italic text-white/60 leading-relaxed outline-none min-h-[150px]"
-            placeholder="Doğru yanıtın nedenini ve klinik incileri buraya not et..."
-          />
-        </section>
+            {/* Soru Metni Formu */}
+            <section className="space-y-2">
+              <label className="text-[8px] text-white/30 uppercase tracking-widest font-mono">Soru Metni</label>
+              <textarea 
+                value={trial.question}
+                onChange={(e) => setTrial({...trial, question: e.target.value})}
+                placeholder="Klinik soruyu buraya mühürle..."
+                className="w-full bg-black/20 border border-white/5 focus:border-[#D4AF37]/30 p-4 text-sm md:text-base italic outline-none min-h-[100px] leading-relaxed rounded-sm font-serif"
+              />
+            </section>
 
-        {/* Etiketler */}
-        <DivineTagInput tags={trial.tags || []} onChange={(t) => setTrial({...trial, tags: t})} />
+            {/* Dinamik Şıklar */}
+            <div className="space-y-4">
+              <label className="text-[8px] text-white/30 uppercase tracking-widest font-mono block">Seçenek Yapısı & Doğru Matris</label>
+              {trial.options.map((opt: string, i: number) => (
+                <div key={i} className="flex gap-3 items-center">
+                  <button 
+                    onClick={() => setTrial({...trial, correct_idx: i})}
+                    className={`w-10 h-10 border text-xs flex items-center justify-center font-bold transition-all rounded-sm ${trial.correct_idx === i ? 'bg-[#D4AF37] text-black border-[#D4AF37] shadow-[0_0_10px_rgba(212,175,55,0.2)]' : 'border-white/10 text-white/30 hover:border-white/20'}`}
+                  >
+                    {String.fromCharCode(65 + i)}
+                  </button>
+                  <input 
+                    value={opt}
+                    onChange={(e) => {
+                      const newOpts = [...trial.options];
+                      newOpts[i] = e.target.value;
+                      setTrial({...trial, options: newOpts});
+                    }}
+                    className="flex-1 bg-white/[0.01] border border-white/5 p-3 text-xs italic outline-none focus:border-[#D4AF37]/30 rounded-sm font-sans"
+                  />
+                  {trial.options.length > 2 && (
+                    <button 
+                      onClick={() => setTrial({...trial, options: trial.options.filter((_:any, idx:number) => idx !== i)})}
+                      className="text-white/20 hover:text-red-500 transition-colors text-xs px-2"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              ))}
+              <button onClick={() => setTrial({...trial, options: [...trial.options, '']})} className="text-[8px] text-[#D4AF37]/50 uppercase tracking-widest font-mono">+ Yeni Şık Enjekte Et</button>
+            </div>
+
+            {/* Açıklama */}
+            <section className="space-y-2">
+              <label className="text-[8px] text-white/30 uppercase tracking-widest font-mono block">Klinik Analiz & Textbook Referansı (Explanation)</label>
+              <textarea 
+                value={trial.explanation}
+                onChange={(e) => setTrial({...trial, explanation: e.target.value})}
+                className="w-full bg-black/60 border border-white/5 p-4 text-xs italic text-white/60 leading-relaxed outline-none min-h-[120px] rounded-sm font-serif"
+                placeholder="Doğru yanıtın patofizyolojik gerekçesini, Costanzo/Lippincott referans sayfasını buraya mühürle..."
+              />
+            </section>
+
+            {/* Kapsam & Etiketler */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <label className="text-[8px] text-white/30 uppercase tracking-widest font-mono block mb-2">Branş</label>
+                <select 
+                  value={trial.subject}
+                  onChange={e => setTrial({...trial, subject: e.target.value})}
+                  className="w-full bg-black/40 border border-white/10 p-3 text-[#D4AF37] text-[10px] uppercase tracking-widest outline-none rounded-sm font-mono"
+                >
+                  <option value="Anatomi">Anatomi</option>
+                  <option value="Fizyoloji">Fizyoloji</option>
+                  <option value="Histoloji">Histoloji</option>
+                  <option value="Biyokimya">Biyokimya</option>
+                  <option value="Mikrobiyoloji">Mikrobiyoloji</option>
+                  <option value="Patoloji">Patoloji</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-[8px] text-white/30 uppercase tracking-widest font-mono block mb-2">Etiket İzlemleri</label>
+                <DivineTagInput tags={trial.tags || []} onChange={(t) => setTrial({...trial, tags: t})} />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      <footer className="fixed bottom-0 left-0 right-0 bg-black/90 border-t border-[#D4AF37]/20 p-6 z-50">
+      {/* FOOTER MÜHÜRLEME BARUTU */}
+      <footer className="fixed bottom-0 left-0 right-0 bg-[#010102]/95 border-t border-t-white/5 p-4 md:p-6 z-50 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto flex justify-end">
-          <button onClick={handleSave} className="bg-[#D4AF37] text-black px-12 py-3 font-bold uppercase text-[10px] tracking-[0.3em] active:scale-95 transition-all shadow-[0_0_20px_rgba(212,175,55,0.2)]">
-            VAKAYI MÜHÜRLE
+          <button 
+            disabled={isBulkMode}
+            onClick={handleSave} 
+            className="bg-[#D4AF37] text-black px-12 py-3 font-bold uppercase text-[10px] tracking-[0.3em] active:scale-95 transition-all shadow-[0_0_20px_rgba(212,175,55,0.15)] disabled:opacity-10 rounded-sm"
+          >
+            VAKAYI KÜLLİYATA MÜHÜRLE
           </button>
         </div>
       </footer>
