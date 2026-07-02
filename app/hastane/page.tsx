@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 type Stage = 'STAJYER' | 'INTERN' | 'DHY' | 'UZMAN';
-type GameStatus = 'CONTINUE' | 'SUCCESS' | 'FATAL_ERROR' | 'DEATH';
+type GameStatus = 'CONTINUE' | 'SUCCESS' | 'FATAL_ERROR' | 'DEATH' | 'FAILED';
 
 interface Log { 
   role: 'system' | 'user'; 
@@ -176,27 +176,28 @@ export default function DivineHospital() {
 
   return (
     <main className="fixed inset-0 bg-[#010102] flex flex-col font-serif select-none overflow-hidden text-slate-200">
-      
-      {/* OYUN BİTİŞ OVERLAY */}
-      {status !== 'CONTINUE' && (
-        <div className="absolute inset-0 z-[200] flex flex-col items-center justify-center p-6 md:p-12 backdrop-blur-md bg-black/85 transition-all duration-1000 animate-in fade-in">
-          <h1 className={`text-3xl md:text-6xl font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] mb-6 text-center ${
-            status === 'SUCCESS' ? 'text-[#D4AF37] drop-shadow-[0_0_20px_rgba(212,175,55,0.5)]' : 
-            'text-[#8B0000] drop-shadow-[0_0_20px_rgba(139,0,0,0.5)]'
-          }`}>
-            {status === 'SUCCESS' ? 'VAKA ÇÖZÜLDÜ' : status === 'DEATH' ? 'HASTA EX' : 'KLİNİK İHLAL'}
-          </h1>
-          <p className="text-white/80 text-center max-w-xl text-xs md:text-base leading-relaxed mb-12 italic border-y border-white/10 py-6 px-2">
-            {logs[logs.length - 1]?.text}
-          </p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="text-[10px] text-white/50 border border-white/20 px-8 py-3 uppercase tracking-[0.4em] hover:bg-[#D4AF37] hover:text-black hover:border-[#D4AF37] transition-all"
-          >
-            [ YENİ VAKA ]
-          </button>
-        </div>
-      )}
+
+    {/* OYUN BİTİŞ (END STATE) OVERLAY */}
+    {status !== 'CONTINUE' && (
+      <div className="absolute inset-0 z-[200] flex flex-col items-center justify-center p-6 md:p-12 backdrop-blur-md bg-black/85 transition-all duration-1000 animate-in fade-in">
+        <h1 className={`text-3xl md:text-6xl font-bold uppercase tracking-[0.2em] md:tracking-[0.3em] mb-6 text-center ${
+          status === 'SUCCESS' ? 'text-[#D4AF37] drop-shadow-[0_0_20px_rgba(212,175,55,0.5)]' : 
+          status === 'FAILED' ? 'text-amber-600 drop-shadow-[0_0_20px_rgba(217,119,6,0.4)]' :
+          'text-[#8B0000] drop-shadow-[0_0_20px_rgba(139,0,0,0.5)]'
+        }`}>
+          {status === 'SUCCESS' ? 'VAKA ÇÖZÜLDÜ' : status === 'FAILED' ? 'YETERSİZ KLİNİK TAKİP' : status === 'DEATH' ? 'HASTA EX' : 'KLİNİK İHLAL'}
+        </h1>
+        <p className="text-white/80 text-center max-w-xl text-xs md:text-base leading-relaxed mb-12 italic border-y border-white/10 py-6 px-2">
+          {logs[logs.length - 1]?.text}
+        </p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="text-[10px] text-white/50 border border-white/20 px-8 py-3 uppercase tracking-[0.4em] hover:bg-[#D4AF37] hover:text-black hover:border-[#D4AF37] transition-all"
+        >
+          [ YENİ VAKA ]
+        </button>
+      </div>
+    )}
 
       {/* KONSÜLTASYON PANELİ (MODAL OVERLAY) */}
       {isConsultOpen && (
