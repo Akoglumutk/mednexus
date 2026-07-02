@@ -2,38 +2,66 @@ import { groq } from "@/lib/groq";
 import { NextResponse } from "next/server";
 import { ChatCompletionMessageParam } from "groq-sdk/resources/chat/completions";
 
+// app/api/hastane/action/route.ts dosyasına eklenecek Branş Vaka Kılavuzu
+const BRANS_VAKA_KILAVUZU: Record<string, string[]> = {
+  "KARDİYOLOJİ": [
+    "Akut ST Yükselmeli Miyokard Enfarktüsü (STEMI) - Anterior MI",
+    "Stabil Olmayan Anjina Pektoris (USAP) ve Akut Koroner Sendrom",
+    "Atriyal Fibrilasyon (Hızlı Ventrikül Yanıtlı) ve Akut Kalp Yetersizliği"
+  ],
+  "NEFROLOJİ": [
+    "Poststreptokokal Akut Glomerulonefrit (PSGN) - Nefritik Sendrom",
+    "Minimal Değişiklik Hastalığına (MCD) Bağlı Ağır Nefrotik Sendrom",
+    "Akut Tübüler Nekroz (ATN) - Toksik Hasara Bağlı Akut Böbrek Hasarı",
+    "Kronik Böbrek Hastalığı Evre 4 Zemininde Gelişen Akut Hiperkalemi Krizi"
+  ],
+  "GASTROENTEROLOJİ": [
+    "Özofagus Variz Kanamasına Bağlı Üst GİS Kanaması ve Siroz Dekompanzasyonu",
+    "Akut Pankreatit - Safra Taşı Kaynaklı (Biliyer) Akut Karın",
+    "Ülseratif Kolit Akut Atak - Toksik Megakolon Şüphesi"
+  ],
+  "ACİL": [
+    "Diabetik Ketoasidoz (DKA) Koması",
+    "Anfilaktik Şok - Arı Sokması Sonrası Hücresel Hipoksi",
+    "Pulmoner Emboli - Derin Ven Trombozu Kaynaklı Akut Solunum Sıkıntısı"
+  ]
+};
+
 export async function POST(req: Request) {
   try {
     const { action, stage, branch, vitals, history, turnCount, checklistProgress } = await req.json();
 
-    // 1. Gated Checklist Kontrolü (Hekim doğru sıra ile kritik adımları tamamladı mı?)
-    // Eğer frontend'den gelen onay mekanizması kurulduysa, LLM'i doğrudan başarı moduna zorluyoruz.
-    const isGoldStandardMet = checklistProgress?.step1Done && checklistProgress?.step2Done;
+    // Seçilen branşa ait vaka listesini çekiyoruz. Eğer kılavuzda yoksa jenerik acil vakası veriyoruz.
+    const bransVakalari = BRANS_VAKA_KILAVUZU[branch?.toUpperCase()] || ["Akut Apandisit zemininde gelişen peritonit"];
+    
+    // Modelin her seferinde aynı vakayı üretmemesi için sistem promptuna bu diziyi enjekte edeceğiz.
+    const vakaHavuzuMetni = bransVakalari.map((v, i) => `${i+1}. ${v}`).join("\n");
 
-    // 2. Sistem Yönergesi (Divine Hospital Kuralları)
     const systemPrompt: ChatCompletionMessageParam = {
       role: "system",
       content: `ROL: Divine Hospital tıbbi simülasyon motorusun.
       BRANŞ: ${branch} | KADEME: ${stage} | SİMÜLASYON TURU: ${turnCount || 0}
       
-      YANIT FORMATI: Kesinlikle JSON dön. Asla markdown kullanma. Metin içinde kaçış karakterlerine dikkat et.
+      YANIT FORMATI: Kesinlikle JSON dön. Asla markdown kullanma.
       {
-        "log": "Klinik durum açıklaması veya hekimin hamlesine verilen dramatik/klinik tepki...",
+        "log": "Klinik durum açıklaması...",
         "newVitals": { "hr": 80, "bp": "120/80", "temp": 36.6, "spo2": 98 },
-        "status": "CONTINUE", // Durumlar: CONTINUE, SUCCESS, FATAL_ERROR, DEATH
-        "options": {
-          "ANAMNEZ": ["Hamle 1", "Hamle 2"],
-          "MUAYENE": ["Hamle 1"],
-          "TETKİK": ["Hamle 1"],
-          "TEDAVİ": ["Hamle 1"]
-        }
+        "status": "CONTINUE", 
+        "options": { "ANAMNEZ": [], "MUAYENE": [], "TETKİK": [], "TEDAVİ": [] }
       }
 
+      BRANŞA ÖZEL VAKA ÜRETİM KURALI (KRİTİK):
+      Kullanıcı "${branch}" branşını seçti. "Vakayı Başlat" komutu verildiğinde, kesinlikle başka branşların (Kardiyoloji, KVC vb.) popüler vakalarına KAÇMA. Aşağıdaki vaka havuzundan, daha önce bu oturumda işlenmemiş RASTGELE bir patolojiyi seç ve simülasyonu o patofizyoloji üzerine kur:
+      
+      [${branch} VAKA HAVUZU KILAVUZU]
+      ${vakaHavuzuMetni}
+      
+      Örneğin hekim NEFROLOJİ seçtiyse vaka göğüs ağrısı olamaz; hematüri, oligüri, periorbital ödem, proteinüri veya üremik semptomlarla (bulantı, kusma, ensefalopati) başlamalıdır.
+
       KLİNİK KURALLAR VE ZAMAN MEKANİĞİ:
-      1. SÜREÇ TAKİBİ: Şu an vakanın ${turnCount || 0}. hamlesindeyiz. Eğer bu akut bir acil vakaysa (MI, Akut Batın, Arrest vb.) ve hekim hala doğru tanı/tedavi adımlarını atmadıysa, TUR SAYISI ARTTIKÇA hastanın vitallerini kademeli olarak KÖTÜLEŞTİR (Nabzı fırlat, tansiyonu dekompanse et, spo2 düşür).
-      2. KESİN BAŞARI (SUCCESS): ${isGoldStandardMet ? "KRİTİK BİLGİ: Hekim tanı ve tedavi protokolünü (Gold Standard) doğru sıra ile tamamladı. Bu turda kesinlikle status değerini 'SUCCESS' yapmalısın. Log kısmında hekimi epikriz tadında öv, ameliyatın/müdahalenin başarısını anlat ve döngüyü bitir." : "Hasta henüz tamamen stabilize edilmedi, hekimin hamlelerini ve klinik mantığını değerlendirmeye devam et."}
-      3. ÇÖMEZ HATASI (FATAL_ERROR): Eğer kullanıcı akut/acil bir durumda zaman kaybettiren saçma bir tetkik isterse (örn: Aktif MI geçiren hastaya tedavi yerine MR istemek, tansiyonu 60/40 olan hastaya antihipertansif vermek) veya tur sayısı 10'u geçtiği halde hasta hala tedavi edilmediyse status'ü "FATAL_ERROR" veya "DEATH" yap ve simülasyonu bitir.
-      4. SEKMELİ SEÇENEKLER: Eğer status CONTINUE ise, options nesnesindeki ANAMNEZ, MUAYENE, TETKİK, TEDAVİ kategorilerini mantıklı 3'er/4'er kısa ve öz seçenekle doldur. Mobilde taşma yapmaması için seçenek metinleri olabildiğince kısa olmalıdır.`
+      1. SÜREÇ TAKİBİ: Şu an ${turnCount || 0}. hamledeyiz. Hekim patolojiye yönelik spesifik adımları geciktirirse vitalleri kötüleştir.
+      2. GATED CHECKLIST BAŞARI: ${checklistProgress?.step1Done && checklistProgress?.step2Done ? "Kritik tedavi uygulandı, status'ü SUCCESS yap." : "Devam et."}
+      3. SEKMELİ SEÇENEKLER: Seçenekler (options) tamamen seçilen bu spesifik vakanın klinik kılavuzuna uygun olmalıdır.`
     };
 
     // 3. Geçmiş Logları Yapılandırma (Tüm hikayeyi modele besliyoruz)
