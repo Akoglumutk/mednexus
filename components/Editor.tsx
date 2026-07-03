@@ -22,7 +22,7 @@ const CustomBlockquote = Blockquote.extend({
   },
 })
 
-// Görsel genişliğini destekleyen Image uzantısı
+// Görsel genişliğini destekleyen ve HER ZAMAN ORTALAYAN Image uzantısı
 const CustomImage = Image.extend({
   addAttributes() {
     return {
@@ -30,27 +30,10 @@ const CustomImage = Image.extend({
       width: {
         default: '100%',
         renderHTML: attributes => ({
-          style: `width: ${attributes.width};`,
-        }),
-      },
-      textAlign: {
-        default: 'center',
-        renderHTML: attributes => ({
-          style: `display: block; margin-left: ${attributes.textAlign === 'left' ? '0' : attributes.textAlign === 'right' ? 'auto' : 'auto'}; margin-right: ${attributes.textAlign === 'right' ? '0' : attributes.textAlign === 'left' ? 'auto' : 'auto'};`,
+          style: `width: ${attributes.width}; display: block; margin-left: auto; margin-right: auto;`,
         }),
       },
     };
-  },
-  addOptions() {
-    return {
-      ...this.parent?.(),
-      inline: false,
-      allowBase64: true,
-      HTMLAttributes: {},
-      // Eğer resize kullanmıyorsan false, kullanıyorsan ayar objeni gir
-      resize: false, 
-      // TypeScript'in beklediği kesin boolean değerini veriyoruz
-    } as any; // KRİTİK MÜDAHALE: Tip uyuşmazlığını by-pass ediyoruz
   },
 });
 
@@ -60,7 +43,6 @@ const Editor = ({ content, onChange }: { content: any, onChange: (val: any) => v
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        // Blockquote'u data-type ile çalışacak şekilde esnetiyoruz
         blockquote: false,
         heading: { levels: [1, 2, 3] },
       }),
@@ -70,7 +52,7 @@ const Editor = ({ content, onChange }: { content: any, onChange: (val: any) => v
           class: 'mx-auto rounded-lg border border-[#D4AF37]/20 transition-all duration-300 block',
         },
       }),
-      TextAlign.configure({ types: ['heading', 'paragraph', 'image'] }),
+      TextAlign.configure({ types: ['heading', 'paragraph'] }), // Görsel hizalamasını buradan çıkarıp sabitledik
       Link.configure({ openOnClick: false }),
       CustomBlockquote,
     ],
@@ -79,21 +61,18 @@ const Editor = ({ content, onChange }: { content: any, onChange: (val: any) => v
     onUpdate: ({ editor }) => onChange(editor.getJSON()),
     editorProps: {
       attributes: {
-        class: 'prose prose-invert tiptap max-w-none focus:outline-none min-h-[50vh] text-[#E0E0E0] font-serif p-6 md:p-10',
+        class: 'prose prose-invert tiptap max-w-none focus:outline-none min-h-[60vh] text-[#E0E0E0] font-serif p-6 md:p-10 pb-40',
       },
     },
   });
 
   if (!editor) return null;
 
-  // Görsel Resize Fonksiyonu
   const setWidth = (width: string) => {
     editor.chain().focus().updateAttributes('image', { width }).run();
   };
 
-  // Spot/Callout Belirleme
   const setCallout = (type: 'spot' | 'klinik' | 'dikkat') => {
-    // Eğer zaten o tipteyse kapat, değilse aç ve tipi ayarla
     if (editor.isActive('blockquote', { 'data-type': type })) {
         editor.chain().focus().toggleBlockquote().run();
     } else {
@@ -101,8 +80,17 @@ const Editor = ({ content, onChange }: { content: any, onChange: (val: any) => v
     }
   };
 
+  // TUS Kitabı Tarzı Seçili Alanı İki Sütun Yapma / Normal Akışa Döndürme
+  const toggleTwoColumns = () => {
+    if (editor.isActive('paragraph', { class: 'tus-two-columns' })) {
+      editor.chain().focus().updateAttributes('paragraph', { class: null }).run();
+    } else {
+      editor.chain().focus().updateAttributes('paragraph', { class: 'tus-two-columns' }).run();
+    }
+  };
+
   return (
-    <div className="w-full bg-black/40 border border-[#D4AF37]/10 shadow-2xl">
+    <div className="w-full bg-black/40 border border-[#D4AF37]/10 shadow-2xl relative">
       <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={async (e) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -111,110 +99,75 @@ const Editor = ({ content, onChange }: { content: any, onChange: (val: any) => v
         }
       }} />
 
-      {/* TOOLBAR - Asil & Fonksiyonel */}
-      <div className="sticky top-0 z-30 flex flex-wrap gap-1.5 p-3 bg-[#0A0A0A]/95 backdrop-blur-md border-b border-[#D4AF37]/20 overflow-x-auto no-scrollbar items-center">
+      {/* FLOATING TOOLBAR OPTIMIZATION: 
+        `sticky top-16` veya `top-0` Next.js navbar yerleşimine göre ayarlanır. 
+        `z-40` seviyesine çekilerek metin kayarken hep üstte sabit kalır.
+      */}
+      <div className="sticky top-0 z-40 flex flex-wrap gap-2 p-3 bg-[#0A0A0A]/95 backdrop-blur-md border-b border-[#D4AF37]/20 items-center w-full select-none">
         
-        {/* Hiyerarşi (Geri Geldi) */}
-        <div className="flex flex-wrap gap-1.5 p-3 bg-[#0A0A0A]/95 items-center">
-          <button onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={`toolbar-btn ${editor.isActive('heading', { level: 1 }) ? 'text-[#D4AF37] border-[#D4AF37]' : ''}`}>H1</button>
-          <button onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={`toolbar-btn ${editor.isActive('heading', { level: 2 }) ? 'text-[#D4AF37] border-[#D4AF37]' : ''}`}>H2</button>
-          <button onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={`toolbar-btn ${editor.isActive('heading', { level: 3 }) ? 'text-[#D4AF37] border-[#D4AF37]' : ''}`}>H3</button>
+        {/* Hiyerarşi */}
+        <div className="flex gap-1">
+          <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={`toolbar-btn ${editor.isActive('heading', { level: 1 }) ? 'text-[#D4AF37] border-[#D4AF37]' : ''}`}>H1</button>
+          <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={`toolbar-btn ${editor.isActive('heading', { level: 2 }) ? 'text-[#D4AF37] border-[#D4AF37]' : ''}`}>H2</button>
+          <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} className={`toolbar-btn ${editor.isActive('heading', { level: 3 }) ? 'text-[#D4AF37] border-[#D4AF37]' : ''}`}>H3</button>
         </div>
         
-        <div className="divider" />
+        <div className="w-[1px] h-4 bg-white/10" />
 
         {/* Temel Stil */}
-        <div className="flex flex-wrap gap-1.5 p-3 bg-[#0A0A0A]/95 items-center">
-          <button onClick={() => editor.chain().focus().toggleBold().run()} className="toolbar-btn">B</button>
-          <button onClick={() => editor.chain().focus().toggleItalic().run()} className="toolbar-btn">I</button>
-          <button onClick={() => editor.chain().focus().toggleUnderline().run()} className="toolbar-btn">U</button>
+        <div className="flex gap-1">
+          <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={`toolbar-btn ${editor.isActive('bold') ? 'text-[#D4AF37]' : ''}`}>B</button>
+          <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={`toolbar-btn ${editor.isActive('italic') ? 'text-[#D4AF37]' : ''}`}>I</button>
+          <button type="button" onClick={() => editor.chain().focus().toggleUnderline().run()} className={`toolbar-btn ${editor.isActive('underline') ? 'text-[#D4AF37]' : ''}`}>U</button>
         </div>
 
-        <div className="divider" />
-        <div className="flex flex-wrap gap-1.5 p-3 bg-[#0A0A0A]/95 items-center">
+        <div className="w-[1px] h-4 bg-white/10" />
 
-          {/* Listeler (UL/OL) */}
-          <button 
-            onClick={() => editor.chain().focus().toggleBulletList().run()} 
-            className={`toolbar-btn ${editor.isActive('bulletList') ? 'text-[#D4AF37] border-[#D4AF37]' : ''}`}
-          >
-            • 
-          </button>
-          <button 
-            onClick={() => editor.chain().focus().toggleOrderedList().run()} 
-            className={`toolbar-btn ${editor.isActive('orderedList') ? 'text-[#D4AF37] border-[#D4AF37]' : ''}`}
-          >
-            1.
-          </button>
-
-          <div className="divider" />
-
-          {/* Metin Hizalama (Text Alignment) */}
-          <button 
-            onClick={() => {
-              if (editor.isActive('image')) {
-                editor.chain().focus().updateAttributes('image', { textAlign: 'left' }).run();
-              } else {
-                editor.chain().focus().setTextAlign('left').run();
-              }
-            }} 
-            className="toolbar-btn"
-          >
-            Sol
-          </button>
-          <button 
-            onClick={() => {
-              if (editor.isActive('image')) {
-                editor.chain().focus().updateAttributes('image', { textAlign: 'center' }).run();
-              } else {
-                editor.chain().focus().setTextAlign('center').run();
-              }
-            }} 
-            className="toolbar-btn"
-          >
-            Orta
-          </button>
-          <button 
-            onClick={() => {
-              if (editor.isActive('image')) {
-                editor.chain().focus().updateAttributes('image', { textAlign: 'right' }).run();
-              } else {
-                editor.chain().focus().setTextAlign('right').run();
-              }
-            }} 
-            className="toolbar-btn"
-          >
-            Sağ
-          </button>
+        {/* Metin Hizalama (Sadece Metinleri Bağlar) */}
+        <div className="flex gap-1">
+          <button type="button" onClick={() => editor.chain().focus().setTextAlign('left').run()} className={`toolbar-btn ${editor.isActive({ textAlign: 'left' }) ? 'text-[#D4AF37]' : ''}`}>Sol</button>
+          <button type="button" onClick={() => editor.chain().focus().setTextAlign('center').run()} className={`toolbar-btn ${editor.isActive({ textAlign: 'center' }) ? 'text-[#D4AF37]' : ''}`}>Orta</button>
+          <button type="button" onClick={() => editor.chain().focus().setTextAlign('justify').run()} className={`toolbar-btn ${editor.isActive({ textAlign: 'justify' }) ? 'text-[#D4AF37]' : ''}`}>İki Yana</button>
         </div>
 
-        <div className="divider" />
-        
-        <div className="flex flex-wrap gap-1.5 p-3 bg-[#0A0A0A]/95 items-center">
-        {/* Callout Sistemi (Farklılaşmış) */}
-          <button onClick={() => setCallout('spot')} className={`px-2 py-1 border text-[9px] font-bold uppercase transition-all ${editor.isActive('blockquote', { 'data-type': 'spot' }) ? 'bg-[#8B0000] text-white' : 'border-[#8B0000] text-[#8B0000]'}`}>Spot</button>
-          <button onClick={() => setCallout('klinik')} className={`px-2 py-1 border text-[9px] font-bold uppercase transition-all ${editor.isActive('blockquote', { 'data-type': 'klinik' }) ? 'bg-[#008B8B] text-white' : 'border-[#008B8B] text-[#008B8B]'}`}>Klinik</button>
-          <button onClick={() => setCallout('dikkat')} className={`px-2 py-1 border text-[9px] font-bold uppercase transition-all ${editor.isActive('blockquote', { 'data-type': 'dikkat' }) ? 'bg-[#D4AF37] text-black' : 'border-[#D4AF37] text-[#D4AF37]'}`}>Dikkat</button>
+        <div className="w-[1px] h-4 bg-white/10" />
+
+        {/* TUS Kitabı Düzeni: 2 Sütun Mührü */}
+        <button 
+          type="button"
+          onClick={toggleTwoColumns} 
+          className={`px-2 py-1 border text-[9px] font-mono font-bold uppercase transition-all ${editor.isActive('paragraph', { class: 'tus-two-columns' }) ? 'bg-[#D4AF37] text-black border-[#D4AF37]' : 'border-white/20 text-white/40 hover:border-[#D4AF37]/40'}`}
+        >
+          [ 2 Sütun Modu ]
+        </button>
+
+        <div className="w-[1px] h-4 bg-white/10" />
+
+        {/* Callout Sistemi */}
+        <div className="flex gap-1">
+          <button type="button" onClick={() => setCallout('spot')} className={`px-2 py-1 border text-[9px] font-bold uppercase transition-all ${editor.isActive('blockquote', { 'data-type': 'spot' }) ? 'bg-[#8B0000] text-white' : 'border-[#8B0000] text-[#8B0000]'}`}>Spot</button>
+          <button type="button" onClick={() => setCallout('klinik')} className={`px-2 py-1 border text-[9px] font-bold uppercase transition-all ${editor.isActive('blockquote', { 'data-type': 'klinik' }) ? 'bg-[#008B8B] text-white' : 'border-[#008B8B] text-[#008B8B]'}`}>Klinik</button>
+          <button type="button" onClick={() => setCallout('dikkat')} className={`px-2 py-1 border text-[9px] font-bold uppercase transition-all ${editor.isActive('blockquote', { 'data-type': 'dikkat' }) ? 'bg-[#D4AF37] text-black' : 'border-[#D4AF37] text-[#D4AF37]'}`}>Dikkat</button>
         </div>
 
-        <div className="divider" />
+        <div className="w-[1px] h-4 bg-white/10" />
 
-        <div className="flex flex-wrap gap-1.5 p-3 bg-[#0A0A0A]/95 items-center">
-        <button onClick={() => fileInputRef.current?.click()} className="toolbar-btn">📷 +</button>
-        {/* Görsel Yönetimi */}
-          <div className="flex bg-[#8B0000]/10 border border-[#8B0000]/30 rounded px-1 gap-1">
-            <button onClick={() => setWidth('25%')} className="toolbar-btn !border-none text-[8px]">S</button>
-            <button onClick={() => setWidth('50%')} className="toolbar-btn !border-none text-[8px]">M</button>
-            <button onClick={() => setWidth('100%')} className="toolbar-btn !border-none text-[8px]">L</button>
+        {/* Görsel Yönetimi (Sadece Ölçekleme Kalacak Şekilde Arındırıldı) */}
+        <div className="flex gap-1.5 items-center">
+          <button type="button" onClick={() => fileInputRef.current?.click()} className="toolbar-btn">📷 +</button>
+          <div className="flex bg-white/5 border border-white/10 rounded px-1 gap-1">
+            <button type="button" onClick={() => setWidth('30%')} className="toolbar-btn !border-none text-[8px]">S</button>
+            <button type="button" onClick={() => setWidth('60%')} className="toolbar-btn !border-none text-[8px]">M</button>
+            <button type="button" onClick={() => setWidth('100%')} className="toolbar-btn !border-none text-[8px]">L</button>
           </div>
         </div>
 
-        <div className="divider" />
+        <div className="w-[1px] h-4 bg-white/10" />
 
-        <div className="flex flex-wrap gap-1.5 p-3 bg-[#0A0A0A]/95 items-center">
-        {/* Undo/Redo */}
-          <button onClick={() => editor.chain().focus().undo().run()} className="toolbar-btn">↶</button>
-          <button onClick={() => editor.chain().focus().redo().run()} className="toolbar-btn">↷</button>
+        {/* Geri / İleri */}
+        <div className="flex gap-1">
+          <button type="button" onClick={() => editor.chain().focus().undo().run()} className="toolbar-btn">↶</button>
+          <button type="button" onClick={() => editor.chain().focus().redo().run()} className="toolbar-btn">↷</button>
         </div>
       </div>
 
