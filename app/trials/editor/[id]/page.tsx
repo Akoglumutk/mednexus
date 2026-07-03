@@ -311,15 +311,38 @@ export default function TrialsEditor() {
         )}
       </div>
 
-{/* FOOTER MÜHÜRLEME BARUTU - YENİ DÜZENLEME */}
-<footer className="mt-12 border-t border-t-white/5 pt-6 pb-12 flex justify-end">
+{/* FOOTER MÜHÜRLEME VE İPTAL BARUTU */}
+<footer className="mt-12 border-t border-t-white/5 pt-6 pb-12 flex flex-col sm:flex-row justify-end gap-4 font-mono">
+  
+  {/* İptal / Vazgeç Butonu */}
   <button 
-    disabled={isBulkMode}
-    onClick={handleSave} 
-    className="w-full sm:w-auto bg-[#D4AF37] text-black px-12 py-3.5 font-bold uppercase text-[10px] tracking-[0.3em] active:scale-95 transition-all shadow-[0_0_20px_rgba(212,175,55,0.15)] disabled:opacity-10 rounded-sm font-mono"
+    type="button"
+    disabled={loading}
+    onClick={() => {
+      const confirmCancel = confirm("Yaptığın değişiklikler külliyata işlenmeyecek. Çıkmak istediğine emin misin hekim?");
+      if (confirmCancel) {
+        // Eğer yeni vaka oluşturuluyorsa arşive, var olan vaka düzenleniyorsa vakanın kendi odasına dön
+        if (id === 'new') {
+          router.push('/trials');
+        } else {
+          router.push(`/trials/${id}`);
+        }
+      }
+    }} 
+    className="w-full sm:w-auto border border-[#8B0000]/40 text-[#8B0000] hover:text-white hover:bg-[#8B0000]/20 px-8 py-3.5 text-[10px] uppercase tracking-[0.2em] rounded-sm transition-all active:scale-95 disabled:opacity-30"
   >
-    VAKAYI KÜLLİYATA MÜHÜRLE
+    [ İptal Et / Geri Çekil ]
   </button>
+
+  {/* Mühürleme Butonu */}
+  <button 
+    disabled={isBulkMode || loading}
+    onClick={handleSave} 
+    className="w-full sm:w-auto bg-[#D4AF37] text-black px-12 py-3.5 font-bold uppercase text-[10px] tracking-[0.3em] active:scale-95 transition-all shadow-[0_0_20px_rgba(212,175,55,0.15)] disabled:opacity-10 rounded-sm"
+  >
+    {loading ? 'MÜHÜRLENİYOR...' : 'VAKAYI KÜLLİYATA MÜHÜRLE'}
+  </button>
+
 </footer>
     </main>
   );
