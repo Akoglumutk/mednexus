@@ -311,17 +311,16 @@ export default function TrialsEditor() {
         )}
       </div>
 
-      <footer className="fixed bottom-0 left-0 right-0 bg-[#010102]/95 border-t border-t-white/5 p-4 md:p-6 z-50 backdrop-blur-sm">
-        <div className="max-w-4xl mx-auto flex justify-end">
-          <button 
-            disabled={isBulkMode}
-            onClick={handleSave} 
-            className="bg-[#D4AF37] text-black px-12 py-3 font-bold uppercase text-[10px] tracking-[0.3em] active:scale-95 transition-all shadow-[0_0_20px_rgba(212,175,55,0.15)] disabled:opacity-10 rounded-sm font-mono"
-          >
-            VAKAYI KÜLLİYATA MÜHÜRLE
-          </button>
-        </div>
-      </footer>
+{/* FOOTER MÜHÜRLEME BARUTU - YENİ DÜZENLEME */}
+<footer className="mt-12 border-t border-t-white/5 pt-6 pb-12 flex justify-end">
+  <button 
+    disabled={isBulkMode}
+    onClick={handleSave} 
+    className="w-full sm:w-auto bg-[#D4AF37] text-black px-12 py-3.5 font-bold uppercase text-[10px] tracking-[0.3em] active:scale-95 transition-all shadow-[0_0_20px_rgba(212,175,55,0.15)] disabled:opacity-10 rounded-sm font-mono"
+  >
+    VAKAYI KÜLLİYATA MÜHÜRLE
+  </button>
+</footer>
     </main>
   );
 }
