@@ -127,7 +127,7 @@ const Editor = ({ content, onChange }: { content: any, onChange: (val: any) => v
         <div className="flex gap-1">
           <button type="button" onClick={() => editor.chain().focus().setTextAlign('left').run()} className={`toolbar-btn ${editor.isActive({ textAlign: 'left' }) ? 'text-[#D4AF37]' : ''}`}>Sol</button>
           <button type="button" onClick={() => editor.chain().focus().setTextAlign('center').run()} className={`toolbar-btn ${editor.isActive({ textAlign: 'center' }) ? 'text-[#D4AF37]' : ''}`}>Orta</button>
-          <button type="button" onClick={() => editor.chain().focus().setTextAlign('justify').run()} className={`toolbar-btn ${editor.isActive({ textAlign: 'justify' }) ? 'text-[#D4AF37]' : ''}`}>İki Yana</button>
+          <button type="button" onClick={() => editor.chain().focus().setTextAlign('justify').run()} className={`toolbar-btn ${editor.isActive({ textAlign: 'justify' }) ? 'text-[#D4AF37]' : ''}`}>İkİ Yana</button>
         </div>
 
         <div className="w-[1px] h-4 bg-white/10" />
