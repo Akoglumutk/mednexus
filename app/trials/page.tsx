@@ -39,12 +39,6 @@ export default function TrialsArchive() {
         </div>
         <div className="flex flex-wrap gap-4 font-mono">
           <button 
-            onClick={() => router.push('/')}
-            className="text-[10px] text-[#D4AF37]/50 hover:text-[#D4AF37] transition-all uppercase tracking-widest border border-[#D4AF37]/10 px-4 py-2 bg-white/5"
-          >
-            [ Ana Kapı ]
-          </button>
-          <button 
             onClick={() => router.push('/trials/editor/new')}
             className="bg-[#8B0000] text-white px-10 py-3 text-[10px] font-bold tracking-[0.2em] uppercase active:scale-95 transition-transform"
           >
