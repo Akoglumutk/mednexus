@@ -1,3 +1,4 @@
+// app/trials/editor/[id]/page.tsx
 'use client'
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
@@ -28,7 +29,7 @@ export default function TrialsEditor() {
         subject: 'Anatomi',
         image_url: ''
       });
-      setIsBulkMode(true); // Yeni sorularda varsayılan olarak toplu modu açabiliriz
+      setIsBulkMode(true);
       setLoading(false);
     } else {
       fetchTrial();
@@ -36,16 +37,27 @@ export default function TrialsEditor() {
   }, [id]);
 
   async function fetchTrial() {
-    const { data, error } = await supabase.from('trials').select('*').eq('id', id).single();
-    if (data) setTrial(data);
+    const { data } = await supabase.from('trials').select('*').eq('id', id).single();
+    if (data) {
+      // Veritabanından gelen null değerlerin inputları bozmaması için sanitizasyon
+      setTrial({
+        ...data,
+        question: data.question || '',
+        options: data.options || ['', '', '', ''],
+        correct_idx: typeof data.correct_idx === 'number' ? data.correct_idx : 0,
+        explanation: data.explanation || '',
+        tags: data.tags || [],
+        subject: data.subject || 'Anatomi',
+        image_url: data.image_url || ''
+      });
+    }
     setLoading(false);
   }
 
-  // --- AI-FREE MS WORD KİTAPÇIK PARÇALAYICI ALGORİTMASI ---
+  // --- GELİŞMİŞ STATE-MACHINE MS WORD KİTAPÇIK PARÇALAYICI ---
   const handleBulkParse = () => {
     if (!bulkText.trim()) return;
 
-    // Satırları temizle ve diziye dök
     const lines = bulkText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
     
     let questionText = '';
@@ -53,9 +65,11 @@ export default function TrialsEditor() {
     let correctIdx = 0;
     let explanationText = '';
 
-    // Basit ama esnek regex kalıpları
     const optionRegex = /^([A-Ea-e])[\s.)\-\/]+(.*)/;
     const answerRegex = /^(cevap|doğru|ans|key)[\s.:\-]*([A-Ea-e])/i;
+
+    // Ayrıştırma durumunu takip eden State-Machine
+    let currentMode: 'question' | 'options' | 'explanation' = 'question';
 
     lines.forEach(line => {
       const optionMatch = line.match(optionRegex);
@@ -64,20 +78,30 @@ export default function TrialsEditor() {
       if (answerMatch) {
         const letter = answerMatch[2].toUpperCase();
         correctIdx = letter.charCodeAt(0) - 65; // A=0, B=1...
+        currentMode = 'explanation'; // Cevap satırından sonra gelen her şey açıklamadır.
       } else if (optionMatch) {
         parsedOptions.push(optionMatch[2]);
+        currentMode = 'options';
       } else {
-        // Eğer ne şık ne cevapsa, sorunun gövdesine ekle (Word'deki çoklu satırlar için)
-        if (questionText) {
-          questionText += '\n' + line;
-        } else {
-          // Soru numarası varsa temizle (Örn: "1. Soru metni" -> "Soru metni")
-          questionText = line.replace(/^\d+[\s.)\-\/]+/, '');
+        // Bir regex kalıbına uymayan ara satırlar
+        if (currentMode === 'question') {
+          if (questionText) {
+            questionText += '\n' + line;
+          } else {
+            // Soru numarasını temizle (Örn: "1. Soru metni" -> "Soru metni")
+            questionText = line.replace(/^\d+[\s.)\-\/]+/, '');
+          }
+        } else if (currentMode === 'options') {
+          // Çok satırlı şıklar: Eğer yeni şık emaresi yoksa, metni son eklenen şıkka bağla
+          if (parsedOptions.length > 0) {
+            parsedOptions[parsedOptions.length - 1] += '\n' + line;
+          }
+        } else if (currentMode === 'explanation') {
+          explanationText += (explanationText ? '\n' : '') + line;
         }
       }
     });
 
-    // En az 2 şık bulunamazsa jenerik iskelet sağla patlamasın
     if (parsedOptions.length === 0) parsedOptions = ['', '', '', ''];
 
     setTrial((prev: any) => ({
@@ -88,10 +112,14 @@ export default function TrialsEditor() {
       explanation: explanationText || prev.explanation
     }));
 
-    setIsBulkMode(false); // Düzenleme ve kontrol formuna geri dön
+    setIsBulkMode(false); // Form moduna dön ve hekime inceleme şansı ver
   };
 
   const handleSave = async () => {
+    if (!trial.question.trim()) {
+      alert("Hata: Soru gövdesi boş bırakılamaz.");
+      return;
+    }
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -127,7 +155,7 @@ export default function TrialsEditor() {
     setLoading(false);
   };
 
-  if (loading || !trial) return <div className="bg-[#010102] h-screen flex items-center justify-center text-[#D4AF37] animate-pulse tracking-[0.3em] uppercase text-[10px]">KÜLLİYAT HAZIRLANIYOR...</div>;
+  if (loading || !trial) return <div className="bg-[#010102] h-screen flex items-center justify-center text-[#D4AF37] animate-pulse tracking-[0.3em] uppercase text-[10px] font-mono">KÜLLİYAT HAZIRLANIYOR...</div>;
 
   return (
     <main onPaste={async (e) => {
@@ -141,11 +169,11 @@ export default function TrialsEditor() {
             <h1 className="text-2xl md:text-3xl font-bold italic tracking-widest text-[#D4AF37] uppercase">Vaka Editörü</h1>
             <p className="text-[8px] text-white/30 uppercase tracking-widest mt-1 font-mono">Trials Module // Intellect Phase</p>
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-4 font-mono">
             {id === 'new' && (
               <button 
                 onClick={() => setIsBulkMode(!isBulkMode)}
-                className="text-[9px] text-[#D4AF37] border border-[#D4AF37]/20 px-3 py-1.5 bg-[#D4AF37]/5 uppercase tracking-widest rounded-sm"
+                className="text-[9px] text-[#D4AF37] border border-[#D4AF37]/20 px-3 py-1.5 bg-[#D4AF37]/5 uppercase tracking-widest rounded-sm transition-all hover:bg-[#D4AF37]/10"
               >
                 {isBulkMode ? '[ Form Modu ]' : '[ MS Word Modu ]'}
               </button>
@@ -156,42 +184,40 @@ export default function TrialsEditor() {
           </div>
         </header>
 
-        {/* --- MOD A: MS WORD TOPLU KOPYALAMA ALANI --- */}
         {isBulkMode ? (
           <section className="space-y-4 animate-in fade-in duration-300">
             <div className="p-4 bg-[#8B0000]/5 border border-[#8B0000]/20 rounded-sm">
-              <span className="text-[8px] block text-red-400 uppercase tracking-widest mb-1 font-mono">Kollateral Ayrıştırıcı (Bulk Engine)</span>
-              <p className="text-xs italic text-white/60">Word kitapçığından kopyaladığın soruyu, şıkları (A,B,C,D,E) ve en alta "Cevap: C" satırını ekleyerek buraya doğrudan yapıştır.</p>
+              <span className="text-[8px] block text-red-400 uppercase tracking-widest mb-1 font-mono">Kollateral Ayrıştırıcı (Bulk Engine Engine v2.0)</span>
+              <p className="text-xs italic text-white/60">Soru gövdesini, şıkları ve en alta "Cevap: C" ibaresini ekleyerek yapıştırın. Cevap satırından sonra yazacağınız açıklamalar otomatik olarak analiz kısmına aktarılacaktır.</p>
             </div>
             <textarea
               value={bulkText}
               onChange={(e) => setBulkText(e.target.value)}
-              placeholder="Örnek:&#10;1. Aşağıdakilerden hangisi hücre membranında en çok bulunan fosfolipiddir?&#10;A) Fosfatidilkolin&#10;B) Fosfatidilinositol&#10;C) Sfingomyelin&#10;Cevap: A"
+              placeholder="Örnek:&#10;1. Hücre membran yapısı...&#10;A) Fosfatidilkolin&#10;B) Sfingomyelin&#10;Cevap: A&#10;Bu sorunun patofizyolojik gerekçesi şudur..."
               className="w-full h-80 bg-black/50 border border-white/10 p-4 text-xs italic text-white/80 outline-none focus:border-[#D4AF37] resize-none leading-relaxed font-sans rounded-sm"
             />
             <button
               onClick={handleBulkParse}
-              className="bg-[#D4AF37] text-black text-[9px] font-bold uppercase tracking-[0.2em] px-8 py-3 rounded-sm active:scale-95 transition-transform"
+              className="bg-[#D4AF37] text-black text-[9px] font-bold uppercase tracking-[0.2em] px-8 py-3 rounded-sm active:scale-95 transition-transform font-mono"
             >
               Matrisi Ayrıştır ve Forma Dağıt
             </button>
           </section>
         ) : (
-          // --- MOD B: DİNAMİK FORM VE ÖNİZLEME ALANI ---
           <div className="space-y-8 animate-in fade-in duration-300">
             {/* Görsel Alanı */}
             <section className="relative aspect-video bg-black/40 border border-white/5 flex items-center justify-center overflow-hidden rounded-sm group">
               {trial.image_url ? (
                 <>
-                  <img src={trial.image_url} className="w-full h-full object-contain" />
-                  <button onClick={() => setTrial({...trial, image_url: ''})} className="absolute top-2 right-2 bg-black/80 border border-white/10 p-2 text-[8px] text-red-500 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity">Görseli Kaldır</button>
-                </>
+                  <img src={trial.image_url} alt="Önizleme" className="w-full h-full object-contain" />
+                  <button onClick={() => setTrial({...trial, image_url: ''})} className="absolute top-2 right-2 bg-black/80 border border border-white/10 p-2 text-[8px] text-red-500 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity font-mono">Görseli Kaldır</button>
+                </                <>
               ) : (
-                <p className="text-[9px] text-white/20 uppercase tracking-widest italic">[ Cihazdan Kopyaladığın Vaka Görselini Buraya Ctrl+V İle Yapıştır ]</p>
+                <p className="text-[9px] text-white/20 uppercase tracking-widest italic font-mono">[ Vaka Görselini Buraya Ctrl+V İle Yapıştır ]</p>
               )}
             </section>
 
-            {/* Soru Metni Formu */}
+            {/* Soru Metni */}
             <section className="space-y-2">
               <label className="text-[8px] text-white/30 uppercase tracking-widest font-mono">Soru Metni</label>
               <textarea 
@@ -202,14 +228,15 @@ export default function TrialsEditor() {
               />
             </section>
 
-            {/* Dinamik Şıklar */}
+            {/* Şıklar */}
             <div className="space-y-4">
               <label className="text-[8px] text-white/30 uppercase tracking-widest font-mono block">Seçenek Yapısı & Doğru Matris</label>
               {trial.options.map((opt: string, i: number) => (
                 <div key={i} className="flex gap-3 items-center">
                   <button 
+                    type="button"
                     onClick={() => setTrial({...trial, correct_idx: i})}
-                    className={`w-10 h-10 border text-xs flex items-center justify-center font-bold transition-all rounded-sm ${trial.correct_idx === i ? 'bg-[#D4AF37] text-black border-[#D4AF37] shadow-[0_0_10px_rgba(212,175,55,0.2)]' : 'border-white/10 text-white/30 hover:border-white/20'}`}
+                    className={`w-10 h-10 border text-xs flex items-center justify-center font-bold transition-all rounded-sm font-mono ${trial.correct_idx === i ? 'bg-[#D4AF37] text-black border-[#D4AF37] shadow-[0_0_10px_rgba(212,175,55,0.2)]' : 'border-white/10 text-white/30 hover:border-white/20'}`}
                   >
                     {String.fromCharCode(65 + i)}
                   </button>
@@ -224,7 +251,13 @@ export default function TrialsEditor() {
                   />
                   {trial.options.length > 2 && (
                     <button 
-                      onClick={() => setTrial({...trial, options: trial.options.filter((_:any, idx:number) => idx !== i)})}
+                      type="button"
+                      onClick={() => {
+                        const newOpts = trial.options.filter((_: any, idx: number) => idx !== i);
+                        // Eğer doğru index silinen aralığın dışına çıkarsa sıfırla
+                        const newCorrectIdx = trial.correct_idx >= newOpts.length ? 0 : trial.correct_idx;
+                        setTrial({...trial, options: newOpts, correct_idx: newCorrectIdx});
+                      }}
                       className="text-white/20 hover:text-red-500 transition-colors text-xs px-2"
                     >
                       ×
@@ -232,7 +265,7 @@ export default function TrialsEditor() {
                   )}
                 </div>
               ))}
-              <button onClick={() => setTrial({...trial, options: [...trial.options, '']})} className="text-[8px] text-[#D4AF37]/50 uppercase tracking-widest font-mono">+ Yeni Şık Enjekte Et</button>
+              <button type="button" onClick={() => setTrial({...trial, options: [...trial.options, '']})} className="text-[8px] text-[#D4AF37]/50 uppercase tracking-widest font-mono transition-colors hover:text-[#D4AF37]">+ Yeni Şık Enjekte Et</button>
             </div>
 
             {/* Açıklama */}
@@ -241,12 +274,12 @@ export default function TrialsEditor() {
               <textarea 
                 value={trial.explanation}
                 onChange={(e) => setTrial({...trial, explanation: e.target.value})}
-                className="w-full bg-black/60 border border-white/5 p-4 text-xs italic text-white/60 leading-relaxed outline-none min-h-[120px] rounded-sm font-serif"
-                placeholder="Doğru yanıtın patofizyolojik gerekçesini, Costanzo/Lippincott referans sayfasını buraya mühürle..."
+                className="w-full bg-black/60 border border-white/5 p-4 text-xs italic text-white/60 leading-relaxed outline-none min-h-[120px] rounded-sm font-sans whitespace-pre-line"
+                placeholder="Doğru yanıtın patofizyolojik gerekçesini buraya mühürle..."
               />
             </section>
 
-            {/* Kapsam & Etiketler */}
+            {/* Meta Alanları */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
                 <label className="text-[8px] text-white/30 uppercase tracking-widest font-mono block mb-2">Branş</label>
@@ -272,13 +305,12 @@ export default function TrialsEditor() {
         )}
       </div>
 
-      {/* FOOTER MÜHÜRLEME BARUTU */}
       <footer className="fixed bottom-0 left-0 right-0 bg-[#010102]/95 border-t border-t-white/5 p-4 md:p-6 z-50 backdrop-blur-sm">
         <div className="max-w-4xl mx-auto flex justify-end">
           <button 
             disabled={isBulkMode}
             onClick={handleSave} 
-            className="bg-[#D4AF37] text-black px-12 py-3 font-bold uppercase text-[10px] tracking-[0.3em] active:scale-95 transition-all shadow-[0_0_20px_rgba(212,175,55,0.15)] disabled:opacity-10 rounded-sm"
+            className="bg-[#D4AF37] text-black px-12 py-3 font-bold uppercase text-[10px] tracking-[0.3em] active:scale-95 transition-all shadow-[0_0_20px_rgba(212,175,55,0.15)] disabled:opacity-10 rounded-sm font-mono"
           >
             VAKAYI KÜLLİYATA MÜHÜRLE
           </button>
