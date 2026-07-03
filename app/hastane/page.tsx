@@ -223,7 +223,8 @@ function MenuView({ stage, setStage, branch, setBranch, onStart }: any) {
     'ANESTEZİ', 'ÇOCUK CERRAHİ', 'ÇOCUK PSİKİYATRİ', 'OFTALMOLOJİ', 
     'KBB', 'NÖROŞİRUJİ', 'ORTOPEDİ', 'GERİATRİ', 'KVC', 
     'PLASTİK CERRAHİ', 'NÜKLEER TIP', 'GENETİK', 'RADYASYON ONKOLOJİSİ', 
-    'GÖĞÜS CERRAHİSİ', 'DAHİLİYE', 'GÖĞÜS HASTALIKLARI'
+    'GÖĞÜS CERRAHİSİ', 'DAHİLİYE', 'GÖĞÜS HASTALIKLARI', 'TIBBİ BİYOKİMYA',
+    'PATOLOJİ', 'AİLE HEKİMLİĞİ', 'ALERJİ VE İMMÜNOLOJİ'
   ].sort();
 
   return (
