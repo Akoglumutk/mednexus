@@ -92,7 +92,7 @@ export default function DivineHospital() {
 
       {isLoading && (
         <div className="h-[60vh] flex flex-col items-center justify-center text-[#D4AF37] uppercase text-[10px] tracking-[0.3em] font-mono animate-pulse">
-          Kahin Klinik Vakayı Örüyor...
+          Vaka hazırlanıyor...
         </div>
       )}
 
@@ -104,7 +104,7 @@ export default function DivineHospital() {
             <h2 className="text-[#D4AF37] text-[10px] font-mono uppercase tracking-[0.4em] border-b border-white/5 pb-3">
               {isFinished ? `✓ ANAMNEZ SONLANDI: ${caseData.diagnosisTitle}` : `• KLİNİK ANAMNEZ & BULGULAR`}
             </h2>
-            <p className="text-sm md:text-base leading-loose text-justify tracking-wide text-white/90 first-letter:text-3xl first-letter:font-bold first-letter:text-[#D4AF37] first-letter:mr-2 first-letter:float-left whitespace-pre-line">
+            <p className="text-sm md:text-base leading-loose text-justify tracking-wide text-white/90 whitespace-pre-line font-sans">
               {caseData.caseParagraph}
             </p>
           </section>
@@ -114,7 +114,7 @@ export default function DivineHospital() {
             {!isFinished ? (
               <div className="bg-black/40 border border-[#D4AF37]/20 p-6 md:p-8 rounded-sm space-y-6 shadow-xl animate-in fade-in duration-300">
                 <div className="flex justify-between items-center font-mono text-[9px] tracking-widest text-[#D4AF37]/50 uppercase">
-                  <span>SORU MALZEMESİ</span>
+                  <span>SORU</span>
                   <span>{currentQuestionIdx + 1} / {caseData.questions.length}</span>
                 </div>
 
@@ -177,7 +177,7 @@ export default function DivineHospital() {
                   onClick={() => setView('menu')}
                   className="bg-[#D4AF37] text-black px-10 py-3.5 text-[10px] font-mono font-bold uppercase tracking-[0.3em] active:scale-95 transition-all rounded-sm shadow-md"
                 >
-                  NÖBET ODASINA DÖN
+                  CLINICIUM'A DÖN
                 </button>
               </div>
             )}
@@ -223,7 +223,7 @@ function MenuView({ stage, setStage, branch, setBranch, onStart }: any) {
     'ANESTEZİ', 'ÇOCUK CERRAHİ', 'ÇOCUK PSİKİYATRİ', 'OFTALMOLOJİ', 
     'KBB', 'NÖROŞİRUJİ', 'ORTOPEDİ', 'GERİATRİ', 'KVC', 
     'PLASTİK CERRAHİ', 'NÜKLEER TIP', 'GENETİK', 'RADYASYON ONKOLOJİSİ', 
-    'GÖĞÜS CERRAHİSİ', 'DAHİLİYE'
+    'GÖĞÜS CERRAHİSİ', 'DAHİLİYE', 'GÖĞÜS HASTALIKLARI'
   ].sort();
 
   return (
@@ -231,13 +231,13 @@ function MenuView({ stage, setStage, branch, setBranch, onStart }: any) {
       <div className="max-w-2xl w-full border border-[#D4AF37]/20 bg-black/40 p-6 md:p-12 backdrop-blur-xl my-6 md:my-12 shadow-[0_0_50px_rgba(0,0,0,1)] relative overflow-hidden rounded-sm font-serif">
         <header className="flex flex-col md:flex-row justify-between items-center gap-6 border-b border-[#D4AF37]/10 pb-6 mb-8 md:mb-12 relative z-10 font-mono">
           <h1 className="text-[#D4AF37] text-xl md:text-2xl font-bold italic tracking-[0.3em] uppercase text-center underline underline-offset-8 decoration-[#D4AF37]/20">
-            Divine Theater
+            CLINICIUM
           </h1>
         </header>
 
         <div className="space-y-8 md:space-y-12 relative z-10 font-mono">
           <section>
-            <p className="text-[10px] text-white/30 uppercase tracking-[0.3em] mb-4">Kademeyi Mühürle</p>
+            <p className="text-[10px] text-white/30 uppercase tracking-[0.3em] mb-4">Kademe</p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {['STAJYER', 'INTERN', 'DHY', 'UZMAN'].map(s => (
                 <button 
@@ -274,7 +274,7 @@ function MenuView({ stage, setStage, branch, setBranch, onStart }: any) {
             disabled={!branch} 
             className="w-full bg-[#D4AF37] text-black py-4 md:py-5 font-bold uppercase text-[10px] tracking-[0.5em] disabled:opacity-10 transition-all hover:bg-[#D4AF37]/90 active:scale-95 shadow-[0_0_30px_rgba(212,175,55,0.15)] rounded-sm"
           >
-            SAHNEYİ AÇ
+            VAKAYA BAŞLA
           </button>
         </div>
       </div>
