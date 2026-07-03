@@ -34,15 +34,15 @@ export default function TrialsArchive() {
     <main className="min-h-screen bg-[#0A0A0A] text-[#E0E0E0] p-6 font-serif">
       <header className="max-w-7xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-center gap-6 border-b border-[#8B0000]/20 pb-8">
         <div>
-          <h1 className="text-4xl font-bold tracking-[0.2em] text-[#8B0000] uppercase italic">İmtihan</h1>
-          <p className="text-[10px] text-[#D4AF37]/40 uppercase tracking-[0.3em] mt-2 tracking-widest font-mono">Sorgu, Hakikate Götürür</p>
+          <h1 className="text-4xl font-bold tracking-[0.2em] text-[#8B0000] uppercase italic">QUESTIAETO</h1>
+          <p className="text-[10px] text-[#D4AF37]/40 uppercase tracking-[0.3em] mt-2 tracking-widest font-mono">Gradus intellegendi et evocatio activa</p>
         </div>
         <div className="flex flex-wrap gap-4 font-mono">
           <button 
             onClick={() => router.push('/trials/editor/new')}
             className="bg-[#8B0000] text-white px-10 py-3 text-[10px] font-bold tracking-[0.2em] uppercase active:scale-95 transition-transform"
           >
-            Yeni Soru Mühürle
+            Yeni Soru Kaydet
           </button>
         </div>
       </header>
@@ -53,9 +53,9 @@ export default function TrialsArchive() {
 
       <div className="max-w-5xl mx-auto grid gap-4">
         {loading ? (
-          <p className="text-center text-[#D4AF37]/20 animate-pulse uppercase text-xs tracking-widest font-mono">Sorgu Odası Hazırlanıyor...</p>
+          <p className="text-center text-[#D4AF37]/20 animate-pulse uppercase text-xs tracking-widest font-mono">Soru Arşivi Hazırlanıyor...</p>
         ) : filteredTrials.length === 0 ? (
-          <p className="text-center text-white/20 italic text-sm py-10">Külliyatta bu sorguya eş değer bir iz bulunamadı.</p>
+          <p className="text-center text-white/20 italic text-sm py-10">Arşivde aranan tarzda bir soru bulunmadı.</p>
         ) : (
           filteredTrials.map((trial) => (
             <div 
