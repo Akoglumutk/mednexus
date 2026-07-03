@@ -1,24 +1,23 @@
 'use client'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAssetUpload } from '@/hooks/useAssetUpload';
 import DivineTagInput from '@/components/DivineTagInput';
-import DivinePrompt from '@/components/DivinePrompt'; // Kutsal prompt bileşeni mühürlendi
+import DivinePrompt from '@/components/DivinePrompt';
 
 export default function TrialsEditor() {
   const { id } = useParams();
   const router = useRouter();
-  const { handlePaste } = useAssetUpload();
+  const { handlePaste, uploadImage } = useAssetUpload(); // uploadImage eklendi
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [trial, setTrial] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   
-  // Toplu Soru Modu State'leri
   const [bulkText, setBulkText] = useState('');
   const [isBulkMode, setIsBulkMode] = useState(false);
 
-  // --- DIVINE PROMPT STATE YÖNETİMİ ---
   const [promptState, setPromptState] = useState<{
     isOpen: boolean;
     title: string;
@@ -64,7 +63,6 @@ export default function TrialsEditor() {
     setLoading(false);
   }
 
-  // --- STATE-MACHINE MS WORD PARÇALAYICI ---
   const handleBulkParse = () => {
     if (!bulkText.trim()) return;
 
@@ -144,7 +142,6 @@ export default function TrialsEditor() {
     }
   };
 
-  // --- KUTSAL PROMPT ONAY MOTORU ---
   const handlePromptConfirm = async () => {
     const action = promptState.actionType;
     setPromptState({ isOpen: false, title: '', actionType: null });
@@ -177,14 +174,12 @@ export default function TrialsEditor() {
             <p className="text-[8px] text-white/30 uppercase tracking-widest mt-1 font-mono">Trials Module // Intellect Phase</p>
           </div>
           <div className="flex gap-4 font-mono">
-            {id === 'new' && (
-              <button 
-                onClick={() => setIsBulkMode(!isBulkMode)}
-                className="text-[9px] text-[#D4AF37] border border-[#D4AF37]/20 px-3 py-1.5 bg-[#D4AF37]/5 uppercase tracking-widest rounded-sm transition-all hover:bg-[#D4AF37]/10"
-              >
-                {isBulkMode ? '[ Form Modu ]' : '[ MS Word Modu ]'}
-              </button>
-            )}
+            <button 
+              onClick={() => setIsBulkMode(!isBulkMode)}
+              className="text-[9px] text-[#D4AF37] border border-[#D4AF37]/20 px-3 py-1.5 bg-[#D4AF37]/5 uppercase tracking-widest rounded-sm transition-all hover:bg-[#D4AF37]/10"
+            >
+              {isBulkMode ? '[ Form Modu ]' : '[ MS Word Modu ]'}
+            </button>
             {id !== 'new' && (
               <button 
                 onClick={() => setPromptState({ isOpen: true, title: 'Bu vaka külliyattan tamamen silinecek. Emin misin hekim?', actionType: 'delete' })} 
@@ -217,15 +212,37 @@ export default function TrialsEditor() {
           </section>
         ) : (
           <div className="space-y-8 animate-in fade-in duration-300">
-            {/* Görsel Alanı */}
-            <section className="relative aspect-video bg-black/40 border border-white/5 flex items-center justify-center overflow-hidden rounded-sm group">
+            {/* Gelişmiş Form Modu Görsel Yükleme Alanı */}
+            <section className="relative aspect-video bg-black/40 border border-white/5 flex flex-col items-center justify-center overflow-hidden rounded-sm group p-6">
               {trial.image_url ? (
                 <>
                   <img src={trial.image_url} alt="Önizleme" className="w-full h-full object-contain" />
                   <button type="button" onClick={() => setTrial({...trial, image_url: ''})} className="absolute top-2 right-2 bg-black/80 border border-white/10 p-2 text-[8px] text-red-500 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity font-mono">Görseli Kaldır</button>
                 </>
               ) : (
-                <p className="text-[9px] text-white/20 uppercase tracking-widest italic font-mono">[ Vaka Görselini Buraya Ctrl+V İle Yapıştır ]</p>
+                <div className="text-center space-y-3">
+                  <p className="text-[9px] text-white/20 uppercase tracking-widest italic font-mono">[ Ctrl+V ile Yapıştır Veya Dosya Enjekte Et ]</p>
+                  <button 
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="text-[8px] border border-[#D4AF37]/30 text-[#D4AF37] px-4 py-2 hover:bg-[#D4AF37]/10 transition-all uppercase tracking-widest font-mono"
+                  >
+                    Görsel Seç
+                  </button>
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    className="hidden" 
+                    accept="image/*" 
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const url = await uploadImage(file);
+                        setTrial({ ...trial, image_url: url });
+                      }
+                    }}
+                  />
+                </div>
               )}
             </section>
 
@@ -312,31 +329,32 @@ export default function TrialsEditor() {
                 <DivineTagInput tags={trial.tags || []} onChange={(t) => setTrial({...trial, tags: t})} />
               </div>
             </div>
-
-            {/* Gelişmiş Komuta Merkezli Footer */}
-            <footer className="mt-12 border-t border-t-white/5 pt-6 pb-12 flex flex-col sm:flex-row justify-end gap-4 font-mono">
-              <button 
-                type="button"
-                disabled={loading}
-                onClick={() => setPromptState({ isOpen: true, title: 'Yaptığın değişiklikler külliyata işlenmeyecek. Geri çekilmek istediğine emin misin hekim?', actionType: 'cancel' })} 
-                className="w-full sm:w-auto border border-[#8B0000]/40 text-[#8B0000] hover:text-white hover:bg-[#8B0000]/20 px-8 py-3.5 text-[10px] uppercase tracking-[0.2em] rounded-sm transition-all active:scale-95 disabled:opacity-30"
-              >
-                [ İptal Et / Geri Çekil ]
-              </button>
-
-              <button 
-                disabled={isBulkMode || loading}
-                onClick={handleSave} 
-                className="w-full sm:w-auto bg-[#D4AF37] text-black px-12 py-3.5 font-bold uppercase text-[10px] tracking-[0.3em] active:scale-95 transition-all shadow-[0_0_20px_rgba(212,175,55,0.15)] disabled:opacity-10 rounded-sm"
-              >
-                {loading ? 'MÜHÜRLENİYOR...' : 'VAKAYI KÜLLİYATA MÜHÜRLE'}
-              </button>
-            </footer>
           </div>
         )}
       </div>
 
-      {/* KRİTİK PROMPT KATMANI */}
+      {/* GLOBAL AKSİYON FOOTER - HER İKİ MODU DA KAPSAR */}
+      <footer className="fixed bottom-0 left-0 right-0 bg-[#010102]/95 border-t border-t-white/5 p-4 md:p-6 z-40 backdrop-blur-sm">
+        <div className="max-w-4xl mx-auto flex justify-end gap-4 font-mono">
+          <button 
+            type="button"
+            disabled={loading}
+            onClick={() => setPromptState({ isOpen: true, title: 'Yaptığın değişiklikler külliyata işlenmeyecek. Geri çekilmek istediğine emin misin hekim?', actionType: 'cancel' })} 
+            className="w-full sm:w-auto border border-[#8B0000]/40 text-[#8B0000] hover:text-white hover:bg-[#8B0000]/20 px-8 py-3.5 text-[10px] uppercase tracking-[0.2em] rounded-sm transition-all active:scale-95 disabled:opacity-30"
+          >
+            [ İptal Et / Geri Çekil ]
+          </button>
+
+          <button 
+            disabled={isBulkMode || loading}
+            onClick={handleSave} 
+            className="w-full sm:w-auto bg-[#D4AF37] text-black px-12 py-3.5 font-bold uppercase text-[10px] tracking-[0.3em] active:scale-95 transition-all shadow-[0_0_20px_rgba(212,175,55,0.15)] disabled:opacity-10 rounded-sm"
+          >
+            VAKAYI KÜLLİYATA MÜHÜRLE
+          </button>
+        </div>
+      </footer>
+
       <DivinePrompt 
         isOpen={promptState.isOpen}
         type="confirm"
