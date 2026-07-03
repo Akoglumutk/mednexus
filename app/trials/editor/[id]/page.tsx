@@ -170,8 +170,8 @@ export default function TrialsEditor() {
       <div className="max-w-4xl mx-auto space-y-8">
         <header className="border-b border-[#D4AF37]/10 pb-6 flex justify-between items-end">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold italic tracking-widest text-[#D4AF37] uppercase">Vaka Editörü</h1>
-            <p className="text-[8px] text-white/30 uppercase tracking-widest mt-1 font-mono">Trials Module // Intellect Phase</p>
+            <h1 className="text-2xl md:text-3xl font-bold italic tracking-widest text-[#D4AF37] uppercase">Quaestio</h1>
+            <p className="text-[8px] text-white/30 uppercase tracking-widest mt-1 font-mono">Gradus intellegendi et evocatio activa</p>
           </div>
           <div className="flex gap-4 font-mono">
             <button 
@@ -185,7 +185,7 @@ export default function TrialsEditor() {
                 onClick={() => setPromptState({ isOpen: true, title: 'Bu vaka külliyattan tamamen silinecek. Emin misin hekim?', actionType: 'delete' })} 
                 className="text-[9px] text-[#8B0000] hover:underline uppercase tracking-widest"
               >
-                [ VAKAYI İMHA ET ]
+                [ SİL ]
               </button>
             )}
           </div>
@@ -195,7 +195,7 @@ export default function TrialsEditor() {
           <section className="space-y-4 animate-in fade-in duration-300">
             <div className="p-4 bg-[#8B0000]/5 border border-[#8B0000]/20 rounded-sm">
               <span className="text-[8px] block text-red-400 uppercase tracking-widest mb-1 font-mono">Kollateral Ayrıştırıcı (Bulk Engine v2.0)</span>
-              <p className="text-xs italic text-white/60">Metni, şıkları ve en alta cevap satırını ekleyin. Kalan patofizyolojik açıklamalar otomatik olarak mühürlenir.</p>
+              <p className="text-xs italic text-white/60">Metni, şıkları ve en alta cevap satırını ekleyin. Kalan patofizyolojik açıklamalar otomatik olarak kaydedilir.</p>
             </div>
             <textarea
               value={bulkText}
@@ -221,7 +221,7 @@ export default function TrialsEditor() {
                 </>
               ) : (
                 <div className="text-center space-y-3">
-                  <p className="text-[9px] text-white/20 uppercase tracking-widest italic font-mono">[ Ctrl+V ile Yapıştır Veya Dosya Enjekte Et ]</p>
+                  <p className="text-[9px] text-white/20 uppercase tracking-widest italic font-mono">[ Ctrl+V ile Yapıştır Veya Dosya Yükle ]</p>
                   <button 
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
@@ -259,7 +259,7 @@ export default function TrialsEditor() {
 
             {/* Şıklar */}
             <div className="space-y-4">
-              <label className="text-[8px] text-white/30 uppercase tracking-widest font-mono block">Seçenek Yapısı & Doğru Matris</label>
+              <label className="text-[8px] text-white/30 uppercase tracking-widest font-mono block">Seçenekler</label>
               {trial.options.map((opt: string, i: number) => (
                 <div key={i} className="flex gap-3 items-center">
                   <button 
@@ -298,7 +298,7 @@ export default function TrialsEditor() {
 
             {/* Açıklama */}
             <section className="space-y-2">
-              <label className="text-[8px] text-white/30 uppercase tracking-widest font-mono block">Klinik Analiz & Textbook Referansı (Explanation)</label>
+              <label className="text-[8px] text-white/30 uppercase tracking-widest font-mono block">Klinik Analiz & Textbook Referansı (Açıklama)</label>
               <textarea 
                 value={trial.explanation}
                 onChange={(e) => setTrial({...trial, explanation: e.target.value})}
@@ -319,9 +319,21 @@ export default function TrialsEditor() {
                   <option value="Anatomi">Anatomi</option>
                   <option value="Fizyoloji">Fizyoloji</option>
                   <option value="Histoloji">Histoloji</option>
+                  <option value="Embriyoloji">Embriyoloji</option>
                   <option value="Biyokimya">Biyokimya</option>
                   <option value="Mikrobiyoloji">Mikrobiyoloji</option>
                   <option value="Patoloji">Patoloji</option>
+                  <option value="Farmakoloji">Farmakoloji</option>
+                  <option value="Biyofizik">Biyofizik</option>
+                  <option value="Dahiliye">Dahiliye</option>
+                  <option value="KadinDogum">Kadın Doğum</option>
+                  <option value="Pediatri">Pediatri</option>
+                  <option value="GenelCerrahi">Genel Cerrahi</option>
+                  <option value="Gogus">Göğüs Hastalıkları</option>
+                  <option value="Kardiyoloji">Kardiyoloji</option>
+                  <option value="KBB">KBB</option>
+                  <option value="Acil">Acil</option>
+                  <option value="KucukStajlar">Küçük Stajlar</option>
                 </select>
               </div>
               <div>
@@ -342,7 +354,7 @@ export default function TrialsEditor() {
             onClick={() => setPromptState({ isOpen: true, title: 'Yaptığın değişiklikler külliyata işlenmeyecek. Geri çekilmek istediğine emin misin hekim?', actionType: 'cancel' })} 
             className="w-full sm:w-auto border border-[#8B0000]/40 text-[#8B0000] hover:text-white hover:bg-[#8B0000]/20 px-8 py-3.5 text-[10px] uppercase tracking-[0.2em] rounded-sm transition-all active:scale-95 disabled:opacity-30"
           >
-            [ İptal Et / Geri Çekil ]
+            [ İptal Et ]
           </button>
 
           <button 
@@ -350,7 +362,7 @@ export default function TrialsEditor() {
             onClick={handleSave} 
             className="w-full sm:w-auto bg-[#D4AF37] text-black px-12 py-3.5 font-bold uppercase text-[10px] tracking-[0.3em] active:scale-95 transition-all shadow-[0_0_20px_rgba(212,175,55,0.15)] disabled:opacity-10 rounded-sm"
           >
-            VAKAYI KÜLLİYATA MÜHÜRLE
+            SORUYU KAYDET
           </button>
         </div>
       </footer>
