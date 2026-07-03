@@ -205,17 +205,23 @@ export default function TrialsEditor() {
           </section>
         ) : (
           <div className="space-y-8 animate-in fade-in duration-300">
-            {/* Görsel Alanı */}
-            <section className="relative aspect-video bg-black/40 border border-white/5 flex items-center justify-center overflow-hidden rounded-sm group">
-              {trial.image_url ? (
-                <>
-                  <img src={trial.image_url} alt="Önizleme" className="w-full h-full object-contain" />
-                  <button onClick={() => setTrial({...trial, image_url: ''})} className="absolute top-2 right-2 bg-black/80 border border border-white/10 p-2 text-[8px] text-red-500 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity font-mono">Görseli Kaldır</button>
-                </                <>
-              ) : (
-                <p className="text-[9px] text-white/20 uppercase tracking-widest italic font-mono">[ Vaka Görselini Buraya Ctrl+V İle Yapıştır ]</p>
-              )}
-            </section>
+{/* Görsel Alanı */}
+<section className="relative aspect-video bg-black/40 border border-white/5 flex items-center justify-center overflow-hidden rounded-sm group">
+  {trial.image_url ? (
+    <>
+      <img src={trial.image_url} alt="Önizleme" className="w-full h-full object-contain" />
+      <button 
+        type="button"
+        onClick={() => setTrial({...trial, image_url: ''})} 
+        className="absolute top-2 right-2 bg-black/80 border border-white/10 p-2 text-[8px] text-red-500 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity font-mono"
+      >
+        Görseli Kaldır
+      </button>
+    </>
+  ) : (
+    <p className="text-[9px] text-white/20 uppercase tracking-widest italic font-mono">[ Vaka Görselini Buraya Ctrl+V İle Yapıştır ]</p>
+  )}
+</section>
 
             {/* Soru Metni */}
             <section className="space-y-2">
