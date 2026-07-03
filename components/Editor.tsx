@@ -111,7 +111,7 @@ const Editor = ({ content, onChange }: { content: any, onChange: (val: any) => v
 
   return (
     // h-[calc(100vh-200px)] -> Editör kutusunu ekrana sabitleyerek taşmayı engelliyoruz
-    <div className="w-full bg-black/40 border border-[#D4AF37]/10 shadow-2xl h-[calc(100vh-200px)] flex flex-col overflow-hidden relative">
+    <div className="w-full bg-black/40 border border-[#D4AF37]/10 shadow-2xl h-[calc(100vh-200px)] flex flex-col overflow-hidden relative mb-10">
       <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={async (e) => {
         const file = e.target.files?.[0];
         if (file) {
