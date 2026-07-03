@@ -7,6 +7,8 @@ import DivineTagInput from '@/components/DivineTagInput';
 import DivinePrompt from '@/components/DivinePrompt';
 
 export default function AtlasDetail() {
+  const [selectedPins, setSelectedPins] = useState<number[]>([]);
+  
   const { id } = useParams();
   const router = useRouter();
   const { uploadImage } = useAssetUpload();
@@ -36,6 +38,11 @@ export default function AtlasDetail() {
       fetchPreparation();
     }
   }, [id]);
+
+  useEffect(() => {
+    setSelectedPins([]);
+    setActivePinIndex(null);
+  }, [showAllLabels]);
 
   async function fetchPreparation() {
     const { data } = await supabase.from('atlas_assets').select('*').eq('id', id).single();
@@ -193,6 +200,54 @@ export default function AtlasDetail() {
                     )}
                   </div>
                 ))}
+                {prep.pins?.map((pin: any, index: number) => {
+  const isPinSelected = selectedPins.includes(index);
+  // Bir etiket ya küresel şalter açıksa YA DA bu iğne tek başına seçildiyse görünür olmalı!
+  const isLabelVisible = showAllLabels || isPinSelected;
+
+  return (
+    <div 
+      key={index} 
+      className="absolute -translate-x-1/2 -translate-y-1/2 z-40 cursor-pointer p-4"
+      style={{ left: `${pin.x}%`, top: `${pin.y}%` }}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (showAllLabels) {
+          // Eğer şalter açıksa, tıklama sadece aktif iğneyi vurgulasın (eski mantık)
+          setActivePinIndex(activePinIndex === index ? null : index);
+        } else {
+          // Eğer şalter kapalıysa (Self-Test modu), tıklanan iğneyi listeye ekle/çıkar (Tek tek aç/kapa!)
+          if (selectedPins.includes(index)) {
+            setSelectedPins(selectedPins.filter(i => i !== index));
+          } else {
+            setSelectedPins([...selectedPins, index]);
+          }
+        }
+      }}
+    >
+      {/* Vektörel Marker Tasarımları (Ok veya İğne) aynı kalıyor... */}
+      
+      {/* Etiket Baloncuğu */}
+      {isLabelVisible && (
+        <div className="absolute top-8 left-1/2 -translate-x-1/2 bg-black/95 border border-[#D4AF37]/30 px-2 py-1 whitespace-nowrap text-[9px] text-[#D4AF37] font-mono shadow-2xl z-50 animate-in fade-in zoom-in-95 rounded-sm">
+          <span>{pin.label}</span>
+          {isEditing && (
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                setPrep({...prep, pins: prep.pins.filter((_: any, i: number) => i !== index)});
+                setSelectedPins(selectedPins.filter(i => i !== index));
+              }}
+              className="ml-2 text-white/20 hover:text-red-500 text-[10px] transition-colors font-bold"
+            >
+              ×
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+})}
               </div>
             ) : (
               <div className="aspect-video flex flex-col items-center justify-center p-12 bg-black/20 font-mono">
