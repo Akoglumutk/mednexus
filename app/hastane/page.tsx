@@ -1,6 +1,7 @@
 'use client'
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import DivinePrompt from '@/components/DivinePrompt';
 
 type Stage = 'STAJYER' | 'INTERN' | 'DHY' | 'UZMAN';
 type GameStatus = 'CONTINUE' | 'SUCCESS' | 'FATAL_ERROR' | 'DEATH' | 'FAILED';
