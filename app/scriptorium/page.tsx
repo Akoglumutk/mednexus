@@ -37,17 +37,11 @@ export default function Scriptorium() {
       <header className="max-w-4xl mx-auto mb-10 border-b border-[#D4AF37]/20 pb-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6 text-center md:text-left">
           <div>
-            <h1 className="text-4xl font-bold tracking-[0.2em] text-[#D4AF37] uppercase">Matbaa</h1>
+            <h1 className="text-4xl font-bold tracking-[0.2em] text-[#D4AF37] uppercase">CODEX</h1>
             <p className="text-[10px] text-[#D4AF37]/40 tracking-[0.3em] uppercase italic mt-1">
               Scripta manent, verba volant
             </p>
           </div>
-          <button 
-            onClick={() => router.push('/')}
-            className="text-[10px] text-[#D4AF37]/50 hover:text-[#D4AF37] transition-all uppercase tracking-widest border border-[#D4AF37]/10 px-4 py-2 bg-white/5"
-          >
-            [ Ana Kapı ]
-          </button>
           <Link href="/scriptorium/new" 
             className="w-full md:w-auto bg-[#D4AF37] text-black px-10 py-3 text-[10px] font-bold tracking-[0.2em] uppercase active:scale-95 transition-transform">
             Yeni Giriş
