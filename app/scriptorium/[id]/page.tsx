@@ -79,7 +79,7 @@ export default function NoteDetail() {
   };
 
   if (loading) return <div className="min-h-screen bg-[#010102] flex items-center justify-center text-[#D4AF37] tracking-[0.3em] uppercase animate-pulse italic text-[10px] font-mono">Arşiv taranıyor...</div>;
-  if (!note) return <div className="min-h-screen bg-[#010102] flex items-center justify-center text-[#8B0000] uppercase text-[10px] tracking-widest font-mono">Bilgi bulunamadı.</div>;
+  if (!note) return <div className="min-h-screen bg-[#010102] flex items-center justify-center text-[#8B0000] uppercase text-[10px] tracking-widest font-mono">Giriş bulunamadı.</div>;
 
   return (
     <main 
@@ -89,7 +89,7 @@ export default function NoteDetail() {
       <DivinePrompt 
         isOpen={isPromptOpen}
         type="confirm"
-        title="Bu bilgi külliyattan tamamen silinecek. Onaylıyor musun?"
+        title="Bu giriş tamamen silinecek. Onaylıyor musun?"
         onConfirm={executeDelete}
         onCancel={() => setIsPromptOpen(false)}
       />
@@ -165,7 +165,7 @@ export default function NoteDetail() {
                 onClick={handleSave} 
                 className="bg-[#D4AF37] text-black px-12 py-3 text-[9px] font-bold tracking-[0.2em] uppercase rounded-sm shadow-md active:scale-95 transition-all"
               >
-                {id === 'new' ? 'MÜHRÜ BAS' : 'MÜHRÜ GÜNCELLE'}
+                {id === 'new' ? 'KAYDET' : 'GÜNCELLE'}
               </button>
             </div>
           ) : (
@@ -174,7 +174,7 @@ export default function NoteDetail() {
                 onClick={() => setIsPromptOpen(true)} 
                 className="text-[9px] uppercase tracking-widest text-[#8B0000]/50 hover:text-[#8B0000] transition-colors"
               >
-                İmha Et
+                Sil
               </button>
                 
               <button 
