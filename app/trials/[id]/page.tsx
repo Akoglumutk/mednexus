@@ -63,7 +63,7 @@ export default function TrialSolver() {
   };
 
   if (!mounted || !trial) {
-    return <div className="h-screen bg-[#010102] flex items-center justify-center text-[#D4AF37] tracking-[0.3em] text-[10px] uppercase font-mono animate-pulse">VAKA YÜKLENİYOR...</div>;
+    return <div className="h-screen bg-[#010102] flex items-center justify-center text-[#D4AF37] tracking-[0.3em] text-[10px] uppercase font-mono animate-pulse">SORU YÜKLENİYOR...</div>;
   }
 
   return (
@@ -72,8 +72,8 @@ export default function TrialSolver() {
         <header className="flex justify-between items-center text-[10px] text-[#D4AF37]/40 uppercase tracking-widest border-b border-white/5 pb-6 font-mono">
           <div className="flex gap-4 items-center">
             {/* Soruyu Çözmeden Güvenli Geri Dönüş Rotası */}
-            <button onClick={() => router.push('/trials')} className="hover:text-[#D4AF37] text-white/30 transition-colors">← KÜLLİYAT</button>
-            <span>// {trial.subject} // İMTİHAN</span>
+            <button onClick={() => router.push('/trials')} className="hover:text-[#D4AF37] text-white/30 transition-colors">← ARŞİV</button>
+            <span>// {trial.subject} // QUESTIAETO</span>
           </div>
           
           {/* GOTİK KUM SAATI UI ELEMENTİ */}
@@ -126,7 +126,7 @@ export default function TrialSolver() {
             <div className={`p-6 border-l-2 ${selectedIdx === trial.correct_idx ? 'border-[#D4AF37] bg-[#D4AF37]/5' : 'border-[#8B0000] bg-[#8B0000]/5'}`}>
               <h4 className="text-[10px] uppercase tracking-widest mb-4 font-bold font-mono flex justify-between">
                 <span>{selectedIdx === trial.correct_idx ? '✓ Başarılı Analiz' : '✗ Hatalı Teşhis'}</span>
-                <span className="text-white/30 text-[9px] font-normal font-mono">Teşhis Süresi: {formatTime(seconds)}</span>
+                <span className="text-white/30 text-[9px] font-normal font-mono">Çözüm Süresi: {formatTime(seconds)}</span>
               </h4>
               <p className="text-sm italic text-white/70 leading-relaxed font-sans whitespace-pre-line">
                 {trial.explanation || "Bu vaka için klinik açıklama girilmemiş."}
@@ -136,7 +136,7 @@ export default function TrialSolver() {
               onClick={() => router.push('/trials')}
               className="mt-8 text-[9px] uppercase tracking-[0.3em] text-[#D4AF37]/40 hover:text-[#D4AF37] transition-all font-mono"
             >
-              [ Külliyata Dön ]
+              [ Arşive Dön ]
             </button>
           </section>
         )}
