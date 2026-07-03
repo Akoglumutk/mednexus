@@ -4,8 +4,8 @@ import StarterKit from '@tiptap/starter-kit'
 import Blockquote from '@tiptap/extension-blockquote'
 import Underline from '@tiptap/extension-underline'
 import Image from '@tiptap/extension-image'
+import TextAlign from '@tiptap/extension-text-align'
 
-// Aynı CustomBlockquote tanımını buraya da ekle
 const CustomBlockquote = Blockquote.extend({
   addAttributes() {
     return {
@@ -18,24 +18,39 @@ const CustomBlockquote = Blockquote.extend({
   },
 })
 
+const CustomImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      width: {
+        default: '100%',
+        renderHTML: attributes => ({
+          style: `width: ${attributes.width}; display: block; margin-left: auto; margin-right: auto;`,
+        }),
+      },
+    };
+  },
+});
+
 const Viewer = ({ content }: { content: any }) => {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ blockquote: false }),
       CustomBlockquote,
       Underline,
-      Image, 
+      CustomImage, 
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
     ],
     content: content,
     editable: false,
     immediatelyRender: false,
     editorProps: {
       attributes: {
-        class: 'prose prose-invert max-w-none text-[#E0E0E0] font-serif',
+        class: 'prose prose-invert max-w-none text-[#E0E0E0] font-serif leading-loose tracking-wide',
       },
     },
   });
-  // ... useEffect kısımları aynı
+
   return <EditorContent editor={editor} />;
 };
 
