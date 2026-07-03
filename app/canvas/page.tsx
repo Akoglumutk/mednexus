@@ -21,8 +21,8 @@ export default function CanvasArchive() {
     <main className="min-h-screen bg-[#010102] text-[#E0E0E0] p-6 font-serif">
       <header className="max-w-7xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-center gap-6 border-b border-[#8B0000]/20 pb-8">
         <div>
-          <h1 className="text-4xl font-bold tracking-[0.2em] text-[#D4AF37] uppercase italic">Parşömen</h1>
-          <p className="text-[10px] text-[#D4AF37]/40 uppercase tracking-[0.3em] mt-2 tracking-widest">Görsel, zihnin haritasıdır</p>
+          <h1 className="text-4xl font-bold tracking-[0.2em] text-[#D4AF37] uppercase italic">Canvas</h1>
+          <p className="text-[10px] text-[#D4AF37]/40 uppercase tracking-[0.3em] mt-2 tracking-widest">Imago est tabula mentis</p>
         </div>
         <button 
           onClick={() => router.push('/')}
@@ -41,7 +41,7 @@ export default function CanvasArchive() {
 
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
         {loading ? (
-          <div className="col-span-full text-center py-20 animate-pulse text-[#D4AF37]/20 uppercase text-[10px] tracking-widest">Mürekkep Hazırlanıyor...</div>
+          <div className="col-span-full text-center py-20 animate-pulse text-[#D4AF37]/20 uppercase text-[10px] tracking-widest">Canvas Hazırlanıyor...</div>
         ) : drawings.map((doc) => (
           <div 
             key={doc.id}
