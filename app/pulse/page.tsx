@@ -55,7 +55,7 @@ export default function Pulse() {
   if (!mounted || loading) {
     return (
       <div className="h-screen bg-[#0A0A0A] flex items-center justify-center text-[#D4AF37] uppercase text-[10px] tracking-[0.3em] font-mono animate-pulse">
-        Ritim Aranıyor...
+        Arşivler Taranıyor...
       </div>
     );
   }
@@ -66,8 +66,8 @@ export default function Pulse() {
       <header className="p-4 md:p-6 border-b border-[#D4AF37]/10 sticky top-0 bg-[#0A0A0A]/95 backdrop-blur-md z-40">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="text-center sm:text-left">
-            <h1 className="text-xl font-bold tracking-[0.3em] text-[#D4AF37] uppercase italic">Nabız</h1>
-            <p className="text-[7px] text-white/30 uppercase tracking-widest font-mono mt-0.5">Compendium // Reaktif Akış</p>
+            <h1 className="text-xl font-bold tracking-[0.3em] text-[#D4AF37] uppercase italic">Compedium</h1>
+            <p className="text-[7px] text-white/30 uppercase tracking-widest font-mono mt-0.5">Lectio et doctrina actuosa</p>
           </div>
           <div className="w-full sm:w-72">
             <SearchGozcu value={search} onChange={setSearch} />
@@ -78,7 +78,7 @@ export default function Pulse() {
       {/* Akış Alanı */}
       <div className="max-w-2xl mx-auto p-4 space-y-8 mt-6">
         {filteredItems.length === 0 ? (
-          <p className="text-center text-white/20 italic text-xs py-12">Nabız sönümlendi. Uygun veri bulunamadı.</p>
+          <p className="text-center text-white/20 italic text-xs py-12">Arşiv taranamadı. Uygun girişler bulunamadı.</p>
         ) : (
           filteredItems.map((item) => (
             <article 
@@ -108,7 +108,7 @@ export default function Pulse() {
                     onClick={() => router.push(`/trials/${item.id}`)} 
                     className="text-[9px] text-[#8B0000] border border-[#8B0000]/30 px-3 py-1.5 uppercase font-mono tracking-wider hover:bg-[#8B0000]/10 transition-colors"
                   >
-                    Vakayı Çöz
+                    Soruyu Çöz
                   </button>
                 </div>
               )}
@@ -125,7 +125,7 @@ export default function Pulse() {
                     onClick={() => router.push(`/scriptorium/${item.id}`)} 
                     className="text-[9px] text-[#D4AF37] border border-[#D4AF37]/30 px-3 py-1.5 uppercase font-mono tracking-wider hover:bg-[#D4AF37]/10 transition-colors"
                   >
-                    Notu Aç
+                    Girişi Aç
                   </button>
                 </div>
               )}
