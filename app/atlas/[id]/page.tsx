@@ -88,7 +88,7 @@ export default function AtlasDetail() {
       <DivinePrompt 
         isOpen={isDeletePromptOpen}
         type="confirm"
-        title="Bu preparat külliyattan tamamen imha edilecek. Onaylıyor musun?"
+        title="Bu preparat arşivden tamamen silinecek. Onaylıyor musun?"
         onConfirm={handleDelete}
         onCancel={() => setIsDeletePromptOpen(false)}
       />
@@ -96,7 +96,7 @@ export default function AtlasDetail() {
       <DivinePrompt
         isOpen={isPinPromptOpen}
         type="input"
-        title={tool === 'pin' ? "Toplu İğne İsmini Mühürle" : "Ok İşareti İsmini Mühürle"}
+        title={tool === 'pin' ? "Toplu İğne İsmini Gir" : "Ok İşareti İsmini Gir"}
         onConfirm={(val) => {
           if (val && tempCoords) {
             setPrep({ ...prep, pins: [...(prep.pins || []), { x: tempCoords.x, y: tempCoords.y, label: val, markerType: tool }] });
@@ -128,7 +128,7 @@ export default function AtlasDetail() {
             )}
 
             {id !== 'new' && (
-              <button onClick={() => setIsDeletePromptOpen(true)} className="text-[9px] text-[#8B0000] uppercase tracking-widest hover:underline">[ İmha Et ]</button>
+              <button onClick={() => setIsDeletePromptOpen(true)} className="text-[9px] text-[#8B0000] uppercase tracking-widest hover:underline">[ Sil ]</button>
             )}
           </header>
 
@@ -253,7 +253,7 @@ export default function AtlasDetail() {
           </section>
 
           <section>
-            <p className="text-[9px] text-white/30 uppercase tracking-widest mb-3 font-mono">Kürsü / Branş</p>
+            <p className="text-[9px] text-white/30 uppercase tracking-widest mb-3 font-mono">Branş</p>
             <select 
               disabled={!isEditing}
               value={prep?.subject || 'Anatomi'}
@@ -268,7 +268,7 @@ export default function AtlasDetail() {
           </section>
 
           <section>
-             <p className="text-[9px] text-white/30 uppercase tracking-widest mb-3 font-mono">Morfolojik Analiz & Notlar</p>
+             <p className="text-[9px] text-white/30 uppercase tracking-widest mb-3 font-mono">Notlar</p>
              <textarea 
                disabled={!isEditing}
                value={prep?.description || ''}
@@ -279,7 +279,7 @@ export default function AtlasDetail() {
           </section>
 
           <section>
-            <p className="text-[9px] text-white/30 uppercase tracking-widest mb-3 font-mono">Etiket İzlemleri</p>
+            <p className="text-[9px] text-white/30 uppercase tracking-widest mb-3 font-mono">Etiketler</p>
             <DivineTagInput tags={prep?.tags || []} onChange={t => setPrep({...prep, tags: t})} />
           </section>
         </aside>
