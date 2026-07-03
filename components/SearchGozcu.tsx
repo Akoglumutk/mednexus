@@ -16,7 +16,7 @@ export default function SearchGozcu({ value, onChange }: SearchProps) {
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Arşivde iz sür... (Konu, etiket veya mühür)"
+          placeholder="Ara..."
           className="w-full bg-black/60 border border-[#D4AF37]/20 p-5 pl-14 text-[#D4AF37] focus:outline-none focus:border-[#8B0000] transition-all font-serif italic text-sm placeholder:text-[#D4AF37]/20"
         />
         <div className="absolute left-5 top-1/2 -translate-y-1/2 text-[#D4AF37]/40">
