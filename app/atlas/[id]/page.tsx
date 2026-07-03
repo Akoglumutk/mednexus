@@ -156,7 +156,8 @@ export default function AtlasDetail() {
                 
                 {/* Vektörel İşaretleyiciler */}
                 
-                {prep.pins?.map((pin: any, index: number) => {
+{/* MOBİL VE IPAD UYUMLU DOKUNMATİK İĞNELER & OK VEKTÖRLERİ */}
+{prep.pins?.map((pin: any, index: number) => {
   const isPinSelected = selectedPins.includes(index);
   // Bir etiket ya küresel şalter açıksa YA DA bu iğne tek başına seçildiyse görünür olmalı!
   const isLabelVisible = showAllLabels || isPinSelected;
@@ -169,8 +170,12 @@ export default function AtlasDetail() {
       onClick={(e) => {
         e.stopPropagation();
         if (showAllLabels) {
-          // Eğer şalter açıksa, tıklama sadece aktif iğneyi vurgulasın (eski mantık)
-          setActivePinIndex(activePinIndex === index ? null : index);
+          // Eğer şalter açıksa, tıklama iğneyi sadece seçili kılmak için dizide tutsun
+          if (selectedPins.includes(index)) {
+            setSelectedPins([]);
+          } else {
+            setSelectedPins([index]);
+          }
         } else {
           // Eğer şalter kapalıysa (Self-Test modu), tıklanan iğneyi listeye ekle/çıkar (Tek tek aç/kapa!)
           if (selectedPins.includes(index)) {
@@ -181,17 +186,31 @@ export default function AtlasDetail() {
         }
       }}
     >
-      {/* Vektörel Marker Tasarımları (Ok veya İğne) aynı kalıyor... */}
+      {/* Vektörel Marker Tasarımları (Ok veya İğne) */}
+      {pin.markerType === 'arrow' ? (
+        <div className="flex flex-col items-center">
+          <span className={`text-base font-bold font-sans leading-none drop-shadow-[0_2px_5px_rgba(0,0,0,0.9)] transition-all duration-300 ${isPinSelected ? 'text-[#D4AF37] scale-125' : 'text-red-500'}`}>↓</span>
+          <div className={`w-1 h-1 rotate-45 -mt-0.5 ${isPinSelected ? 'bg-[#D4AF37]' : 'bg-red-500'}`} />
+        </div>
+      ) : (
+        <div className="flex flex-col items-center">
+          <div className={`w-3 h-3 rounded-full border border-white/30 shadow-[0_0_8px_rgba(0,0,0,0.8)] transition-all duration-300 ${
+            isPinSelected ? 'scale-125 bg-[#D4AF37] ring-4 ring-[#D4AF37]/20' : 'bg-[#8B0000]'
+          }`} />
+          <div className="w-[1px] h-2 bg-white/40 shadow-sm" />
+        </div>
+      )}
       
-      {/* Etiket Baloncuğu */}
+      {/* Dinamik Şaltere ve Seçime Göre Gösterilen Etiket Baloncuğu */}
       {isLabelVisible && (
         <div className="absolute top-8 left-1/2 -translate-x-1/2 bg-black/95 border border-[#D4AF37]/30 px-2 py-1 whitespace-nowrap text-[9px] text-[#D4AF37] font-mono shadow-2xl z-50 animate-in fade-in zoom-in-95 rounded-sm">
           <span>{pin.label}</span>
           {isEditing && (
             <button 
+              type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                setPrep({...prep, pins: prep.pins.filter((_: any, i: number) => i !== index)});
+                setPrep({ ...prep, pins: prep.pins.filter((_: any, i: number) => i !== index) });
                 setSelectedPins(selectedPins.filter(i => i !== index));
               }}
               className="ml-2 text-white/20 hover:text-red-500 text-[10px] transition-colors font-bold"
@@ -204,6 +223,7 @@ export default function AtlasDetail() {
     </div>
   );
 })}
+                
               </div>
             ) : (
               <div className="aspect-video flex flex-col items-center justify-center p-12 bg-black/20 font-mono">
