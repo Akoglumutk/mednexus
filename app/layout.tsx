@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+import DivineNavbar from '@/components/DivineNavbar';
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -37,6 +39,9 @@ export default function RootLayout({
         {/* CONTENT LAYER */}
         <div className="relative z-10 flex-grow">
           {children}
+
+          {/* Navigasyon Terminali tüm alt sayfalarda havada asılı kalacak */}
+          <DivineNavbar />
         </div>
 
       </body>
