@@ -42,7 +42,7 @@ export default function AtlasUnifiedEditor() {
 
   const handleSave = async () => {
     if (!title.trim() || !imageUrl) {
-      alert("Hata: Başlık ve Görsel mühürlenmek zorundadır.");
+      alert("Hata: Başlık ve görsel girilmek zorundadır.");
       return;
     }
     setLoading(true);
@@ -120,7 +120,7 @@ export default function AtlasUnifiedEditor() {
           />
         </div>
         <button onClick={handleSave} disabled={loading} className="w-full md:w-auto bg-[#8B0000]/10 border border-[#8B0000]/40 text-[#8B0000] px-8 py-3 text-[10px] font-bold uppercase tracking-widest active:scale-95 transition-transform font-mono">
-          {loading ? 'Mühürleniyor...' : '[ ARŞİVE KAYDET ]'}
+          {loading ? 'Kaydediliyor...' : '[ ARŞİVE KAYDET ]'}
         </button>
       </header>
 
