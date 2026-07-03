@@ -161,7 +161,7 @@ export default function TrialsEditor() {
     <main onPaste={async (e) => {
       const url = await handlePaste(e);
       if (url) setTrial({...trial, image_url: url});
-    }} className="min-h-screen bg-[#010102] text-[#E0E0E0] p-4 md:p-12 pb-32 font-serif select-none">
+    }} className="min-h-screen bg-[#010102] text-[#E0E0E0] p-4 md:p-12 pb-40 md:pb-48 font-serif select-none">
       
       <div className="max-w-4xl mx-auto space-y-8">
         <header className="border-b border-[#D4AF37]/10 pb-6 flex justify-between items-end">
