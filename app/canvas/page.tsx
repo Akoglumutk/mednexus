@@ -21,15 +21,9 @@ export default function CanvasArchive() {
     <main className="min-h-screen bg-[#010102] text-[#E0E0E0] p-6 font-serif">
       <header className="max-w-7xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-center gap-6 border-b border-[#8B0000]/20 pb-8">
         <div>
-          <h1 className="text-4xl font-bold tracking-[0.2em] text-[#D4AF37] uppercase italic">Canvas</h1>
+          <h1 className="text-4xl font-bold tracking-[0.2em] text-[#D4AF37] uppercase italic">Palimpsest</h1>
           <p className="text-[10px] text-[#D4AF37]/40 uppercase tracking-[0.3em] mt-2 tracking-widest">Imago est tabula mentis</p>
         </div>
-        <button 
-          onClick={() => router.push('/')}
-          className="text-[10px] text-[#D4AF37]/50 hover:text-[#D4AF37] transition-all uppercase tracking-widest border border-[#D4AF37]/10 px-4 py-2 bg-white/5"
-        >
-          [ Ana Kapı ]
-        </button>
         <button 
           onClick={() => router.push('/canvas/editor/new')}
           className="bg-[#D4AF37] text-white px-10 py-3 text-[10px] font-bold tracking-[0.2em] uppercase active:scale-95"
