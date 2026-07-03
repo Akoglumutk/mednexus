@@ -539,3 +539,23 @@ blockquote[data-type="dikkat"]::before {
   margin-left: auto !important;
   margin-right: auto !important;
 }
+
+/* Tiptap Editörünün İçi ve Okuma Modu İçin 2 Sütun Sınıfı */
+.prose p.tus-two-columns, .prose .tus-two-columns p {
+  column-count: 2 !important;
+  column-gap: 2rem !important;
+  column-rule: 1px solid rgba(212, 175, 55, 0.15) !important;
+  text-align: justify !important;
+  font-size: 13px !important;
+  line-height: 1.8 !important;
+  display: block !important;
+}
+
+/* Editör İçi Scrollbarları Gizleme/Sterilleştirme */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
