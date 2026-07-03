@@ -512,3 +512,30 @@ blockquote[data-type="dikkat"]::before {
     white-space: normal;
   }
 }
+/* Tiptap İçindeki 2 Sütunlu Konu Özeti Yapısı */
+.prose .tus-two-columns {
+  column-count: 2;
+  column-gap: 2rem;
+  column-rule: 1px solid rgba(212, 175, 55, 0.1); /* Sütunlar arası steril ince çizgi */
+  text-align: justify;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+@media (max-width: 640px) {
+  .prose .tus-two-columns {
+    column-count: 1; /* Mobilde taşmayı önlemek için tek akış */
+  }
+}
+
+/* Editör ve Viewer Canvas Alanlarının Alt Bar Tarafından Kapatılma Koruması */
+.prose.tiptap, .mednexus-content-grid {
+  padding-bottom: 12rem !important; /* Alt navbarın yüksekliği kadar alanı canvasa gömüyoruz, böylece manuel scrolling gereksiz kalıyor, metin bitişi yukarıda kalıyor */
+}
+
+/* Tiptap İçindeki Görsellerin Zorunlu Ortalama Protokolü */
+.prose img {
+  display: block !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
