@@ -155,51 +155,7 @@ export default function AtlasDetail() {
                 />
                 
                 {/* Vektörel İşaretleyiciler */}
-                {prep.pins?.map((pin: any, index: number) => (
-                  <div 
-                    key={index} 
-                    className="absolute -translate-x-1/2 -translate-y-1/2 z-40 cursor-pointer p-4" // iPad dokunmatik isabet alanı p-4 ile genişletildi
-                    style={{ left: `${pin.x}%`, top: `${pin.y}%` }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setActivePinIndex(activePinIndex === index ? null : index);
-                    }}
-                  >
-                    {/* Ok mu İğne mi Tespiti */}
-                    {pin.markerType === 'arrow' ? (
-                      <div className="flex flex-col items-center">
-                        <span className={`text-base font-bold font-sans leading-none shadow-text transition-all duration-300 ${activePinIndex === index ? 'text-[#D4AF37] scale-125' : 'text-red-500'}`}>↓</span>
-                        <div className={`w-1 h-1 rotate-45 -mt-0.5 ${activePinIndex === index ? 'bg-[#D4AF37]' : 'bg-red-500'}`} />
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center">
-                        <div className={`w-3 h-3 rounded-full border border-white/30 shadow-lg transition-all duration-300 ${
-                          activePinIndex === index ? 'scale-125 bg-[#D4AF37] ring-4 ring-[#D4AF37]/20' : 'bg-[#8B0000]'
-                        }`} />
-                        <div className="w-[1px] h-2 bg-white/40" />
-                      </div>
-                    )}
-                    
-                    {/* Dinamik Şaltere ve Seçime Göre Gösterilen Etiket Baloncuğu */}
-                    {(showAllLabels || activePinIndex === index) && (
-                      <div className="absolute top-8 left-1/2 -translate-x-1/2 bg-black/95 border border-[#D4AF37]/30 px-2 py-1 whitespace-nowrap text-[9px] text-[#D4AF37] font-mono shadow-2xl z-50 animate-in fade-in zoom-in-95 rounded-sm">
-                        <span>{pin.label}</span>
-                        {isEditing && (
-                          <button 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setPrep({...prep, pins: prep.pins.filter((_: any, i: number) => i !== index)});
-                              setActivePinIndex(null);
-                            }}
-                            className="ml-2 text-white/20 hover:text-red-500 text-[10px] transition-colors font-bold"
-                          >
-                            ×
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
+                
                 {prep.pins?.map((pin: any, index: number) => {
   const isPinSelected = selectedPins.includes(index);
   // Bir etiket ya küresel şalter açıksa YA DA bu iğne tek başına seçildiyse görünür olmalı!
