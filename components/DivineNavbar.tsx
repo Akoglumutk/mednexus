@@ -26,9 +26,12 @@ export default function DivineNavbar() {
   if (isKeyboardOpen) return null;
 
   const menuItems = [
-    { label: '[ ANA KAPI ]', path: '/' },
-    { label: '[ KÜLLİYAT ]', path: '/trials' },
-    { label: '[ YENİ MÜHÜR ]', path: '/trials/editor/new' },
+    { label: '[ TERMİNAL ]', path: '/' },
+    { label: '[ CODEX ]', path: '/scriptorium' },
+    { label: '[ ATLAS ]', path: '/atlas' },
+    { label: '[ PALIMPSEST ]', path: '/canvas' },
+    { label: '[ QUAESTIO ]', path: '/trials' },
+    { label: '[ CLINICUM ]', path: '/hastane' },
   ];
 
   return (
