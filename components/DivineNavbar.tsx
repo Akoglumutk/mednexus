@@ -26,10 +26,11 @@ export default function DivineNavbar() {
   if (isKeyboardOpen) return null;
 
   const menuItems = [
-    { label: '[ TERMİNAL ]', path: '/' },
+    { label: '[ TERMINAL ]', path: '/' },
     { label: '[ CODEX ]', path: '/scriptorium' },
     { label: '[ ATLAS ]', path: '/atlas' },
     { label: '[ PALIMPSEST ]', path: '/canvas' },
+    { label: '[ COMPEDIUM ]', path: '/pulse' },
     { label: '[ QUAESTIO ]', path: '/trials' },
     { label: '[ CLINICUM ]', path: '/hastane' },
   ];
