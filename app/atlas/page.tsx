@@ -34,16 +34,10 @@ export default function AtlasArchive() {
         </div>
         <div className="flex gap-4 w-full md:w-auto justify-center">
           <button 
-            onClick={() => router.push('/')}
-            className="text-[9px] text-[#D4AF37]/50 hover:text-[#D4AF37] transition-all uppercase tracking-widest border border-[#D4AF37]/10 px-5 py-3 bg-white/5 rounded-sm"
-          >
-            [ Ana Kapı ]
-          </button>
-          <button 
             onClick={() => router.push('/atlas/new')}
             className="bg-[#D4AF37] text-black px-6 md:px-10 py-3 text-[9px] md:text-[10px] font-bold tracking-[0.15em] uppercase active:scale-95 transition-transform rounded-sm shadow-md"
           >
-            Yeni Preparat Mühürle
+            Yeni Preparat Gir
           </button>
         </div>
       </header>
@@ -55,7 +49,7 @@ export default function AtlasArchive() {
       {/* IPAD VE MOBİL DOSTU ESNEK GRID SİSTEMİ */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading ? (
-          <p className="text-[#D4AF37]/20 uppercase text-xs tracking-[0.3em] col-span-full text-center py-12 animate-pulse">Gözlemevi taranıyor...</p>
+          <p className="text-[#D4AF37]/20 uppercase text-xs tracking-[0.3em] col-span-full text-center py-12 animate-pulse">Arşiv taranıyor...</p>
         ) : filteredAssets.length > 0 ? (
           filteredAssets.map((asset) => (
             <Link key={asset.id} href={`/atlas/${asset.id}`}>
