@@ -5,6 +5,7 @@ import Underline from '@tiptap/extension-underline'
 import Image from '@tiptap/extension-image'
 import TextAlign from '@tiptap/extension-text-align'
 import Link from '@tiptap/extension-link'
+import Paragraph from '@tiptap/extension-paragraph' // KRİTİK EKLEME
 import { uploadImage } from '@/lib/upload'
 import { useRef } from 'react'
 import Blockquote from '@tiptap/extension-blockquote'
@@ -22,7 +23,24 @@ const CustomBlockquote = Blockquote.extend({
   },
 })
 
-// Görsel genişliğini destekleyen ve HER ZAMAN ORTALAYAN Image uzantısı
+// Sınıf (class) attribute'unu filtrelemeden koruyan Gelişmiş Paragraph Uzantısı
+const CustomParagraph = Paragraph.extend({
+  addAttributes() {
+    return {
+      class: {
+        default: null,
+        // HTML'den okurken class'ı yakala
+        parseHTML: element => element.getAttribute('class'),
+        // HTML'e basarken class'ı aynen aktar (2 SÜTUNUN ÇALIŞMAMA SEBEBİ BUYDU)
+        renderHTML: attributes => {
+          if (!attributes.class) return {};
+          return { class: attributes.class };
+        },
+      },
+    }
+  },
+})
+
 const CustomImage = Image.extend({
   addAttributes() {
     return {
@@ -44,15 +62,17 @@ const Editor = ({ content, onChange }: { content: any, onChange: (val: any) => v
     extensions: [
       StarterKit.configure({
         blockquote: false,
+        paragraph: false, // Standart paragrafı kapatıp özel uzantımızı açıyoruz
         heading: { levels: [1, 2, 3] },
       }),
+      CustomParagraph, // Özel paragraf devreye girdi
       Underline,
       CustomImage.configure({
         HTMLAttributes: {
           class: 'mx-auto rounded-lg border border-[#D4AF37]/20 transition-all duration-300 block',
         },
       }),
-      TextAlign.configure({ types: ['heading', 'paragraph'] }), // Görsel hizalamasını buradan çıkarıp sabitledik
+      TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Link.configure({ openOnClick: false }),
       CustomBlockquote,
     ],
@@ -61,7 +81,8 @@ const Editor = ({ content, onChange }: { content: any, onChange: (val: any) => v
     onUpdate: ({ editor }) => onChange(editor.getJSON()),
     editorProps: {
       attributes: {
-        class: 'prose prose-invert tiptap max-w-none focus:outline-none min-h-[60vh] text-[#E0E0E0] font-serif p-6 md:p-10 pb-40',
+        // h-[calc(100vh-280px)] -> Editörün kendi scroll'u olacak, dışarı taşmayacak!
+        class: 'prose prose-invert tiptap max-w-none focus:outline-none h-[calc(100vh-280px)] overflow-y-auto text-[#E0E0E0] font-serif p-6 md:p-10 no-scrollbar',
       },
     },
   });
@@ -80,7 +101,6 @@ const Editor = ({ content, onChange }: { content: any, onChange: (val: any) => v
     }
   };
 
-  // TUS Kitabı Tarzı Seçili Alanı İki Sütun Yapma / Normal Akışa Döndürme
   const toggleTwoColumns = () => {
     if (editor.isActive('paragraph', { class: 'tus-two-columns' })) {
       editor.chain().focus().updateAttributes('paragraph', { class: null }).run();
@@ -90,7 +110,8 @@ const Editor = ({ content, onChange }: { content: any, onChange: (val: any) => v
   };
 
   return (
-    <div className="w-full bg-black/40 border border-[#D4AF37]/10 shadow-2xl relative">
+    // h-[calc(100vh-200px)] -> Editör kutusunu ekrana sabitleyerek taşmayı engelliyoruz
+    <div className="w-full bg-black/40 border border-[#D4AF37]/10 shadow-2xl h-[calc(100vh-200px)] flex flex-col overflow-hidden relative">
       <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={async (e) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -99,13 +120,8 @@ const Editor = ({ content, onChange }: { content: any, onChange: (val: any) => v
         }
       }} />
 
-      {/* FLOATING TOOLBAR OPTIMIZATION: 
-        `sticky top-16` veya `top-0` Next.js navbar yerleşimine göre ayarlanır. 
-        `z-40` seviyesine çekilerek metin kayarken hep üstte sabit kalır.
-      */}
-      <div className="sticky top-0 z-40 flex flex-wrap gap-2 p-3 bg-[#0A0A0A]/95 backdrop-blur-md border-b border-[#D4AF37]/20 items-center w-full select-none">
-        
-        {/* Hiyerarşi */}
+      {/* TOOLBAR - KESİN FLOATING / STICKY GARANTİSİ */}
+      <div className="sticky top-0 z-40 flex flex-wrap gap-2 p-3 bg-[#0A0A0A] border-b border-[#D4AF37]/20 items-center w-full select-none shrink-0">
         <div className="flex gap-1">
           <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} className={`toolbar-btn ${editor.isActive('heading', { level: 1 }) ? 'text-[#D4AF37] border-[#D4AF37]' : ''}`}>H1</button>
           <button type="button" onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} className={`toolbar-btn ${editor.isActive('heading', { level: 2 }) ? 'text-[#D4AF37] border-[#D4AF37]' : ''}`}>H2</button>
@@ -114,7 +130,6 @@ const Editor = ({ content, onChange }: { content: any, onChange: (val: any) => v
         
         <div className="w-[1px] h-4 bg-white/10" />
 
-        {/* Temel Stil */}
         <div className="flex gap-1">
           <button type="button" onClick={() => editor.chain().focus().toggleBold().run()} className={`toolbar-btn ${editor.isActive('bold') ? 'text-[#D4AF37]' : ''}`}>B</button>
           <button type="button" onClick={() => editor.chain().focus().toggleItalic().run()} className={`toolbar-btn ${editor.isActive('italic') ? 'text-[#D4AF37]' : ''}`}>I</button>
@@ -123,16 +138,14 @@ const Editor = ({ content, onChange }: { content: any, onChange: (val: any) => v
 
         <div className="w-[1px] h-4 bg-white/10" />
 
-        {/* Metin Hizalama (Sadece Metinleri Bağlar) */}
         <div className="flex gap-1">
           <button type="button" onClick={() => editor.chain().focus().setTextAlign('left').run()} className={`toolbar-btn ${editor.isActive({ textAlign: 'left' }) ? 'text-[#D4AF37]' : ''}`}>Sol</button>
           <button type="button" onClick={() => editor.chain().focus().setTextAlign('center').run()} className={`toolbar-btn ${editor.isActive({ textAlign: 'center' }) ? 'text-[#D4AF37]' : ''}`}>Orta</button>
-          <button type="button" onClick={() => editor.chain().focus().setTextAlign('justify').run()} className={`toolbar-btn ${editor.isActive({ textAlign: 'justify' }) ? 'text-[#D4AF37]' : ''}`}>İkİ Yana</button>
+          <button type="button" onClick={() => editor.chain().focus().setTextAlign('justify').run()} className={`toolbar-btn ${editor.isActive({ textAlign: 'justify' }) ? 'text-[#D4AF37]' : ''}`}>İki Yana</button>
         </div>
 
         <div className="w-[1px] h-4 bg-white/10" />
 
-        {/* TUS Kitabı Düzeni: 2 Sütun Mührü */}
         <button 
           type="button"
           onClick={toggleTwoColumns} 
@@ -143,7 +156,6 @@ const Editor = ({ content, onChange }: { content: any, onChange: (val: any) => v
 
         <div className="w-[1px] h-4 bg-white/10" />
 
-        {/* Callout Sistemi */}
         <div className="flex gap-1">
           <button type="button" onClick={() => setCallout('spot')} className={`px-2 py-1 border text-[9px] font-bold uppercase transition-all ${editor.isActive('blockquote', { 'data-type': 'spot' }) ? 'bg-[#8B0000] text-white' : 'border-[#8B0000] text-[#8B0000]'}`}>Spot</button>
           <button type="button" onClick={() => setCallout('klinik')} className={`px-2 py-1 border text-[9px] font-bold uppercase transition-all ${editor.isActive('blockquote', { 'data-type': 'klinik' }) ? 'bg-[#008B8B] text-white' : 'border-[#008B8B] text-[#008B8B]'}`}>Klinik</button>
@@ -152,7 +164,6 @@ const Editor = ({ content, onChange }: { content: any, onChange: (val: any) => v
 
         <div className="w-[1px] h-4 bg-white/10" />
 
-        {/* Görsel Yönetimi (Sadece Ölçekleme Kalacak Şekilde Arındırıldı) */}
         <div className="flex gap-1.5 items-center">
           <button type="button" onClick={() => fileInputRef.current?.click()} className="toolbar-btn">📷 +</button>
           <div className="flex bg-white/5 border border-white/10 rounded px-1 gap-1">
@@ -164,14 +175,16 @@ const Editor = ({ content, onChange }: { content: any, onChange: (val: any) => v
 
         <div className="w-[1px] h-4 bg-white/10" />
 
-        {/* Geri / İleri */}
         <div className="flex gap-1">
           <button type="button" onClick={() => editor.chain().focus().undo().run()} className="toolbar-btn">↶</button>
           <button type="button" onClick={() => editor.chain().focus().redo().run()} className="toolbar-btn">↷</button>
         </div>
       </div>
 
-      <EditorContent editor={editor} />
+      {/* Editör Metin Alanı Kapsayıcısı */}
+      <div className="flex-1 overflow-hidden relative">
+        <EditorContent editor={editor} className="h-full" />
+      </div>
     </div>
   );
 };
