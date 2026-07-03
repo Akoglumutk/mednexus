@@ -5,6 +5,7 @@ import Blockquote from '@tiptap/extension-blockquote'
 import Underline from '@tiptap/extension-underline'
 import Image from '@tiptap/extension-image'
 import TextAlign from '@tiptap/extension-text-align'
+import Paragraph from '@tiptap/extension-paragraph' // Sütun okuma güvencesi
 
 const CustomBlockquote = Blockquote.extend({
   addAttributes() {
@@ -13,6 +14,18 @@ const CustomBlockquote = Blockquote.extend({
         default: 'spot',
         parseHTML: element => element.getAttribute('data-type'),
         renderHTML: attributes => ({ 'data-type': attributes['data-type'] }),
+      },
+    }
+  },
+})
+
+const CustomParagraph = Paragraph.extend({
+  addAttributes() {
+    return {
+      class: {
+        default: null,
+        parseHTML: element => element.getAttribute('class'),
+        renderHTML: attributes => attributes.class ? { class: attributes.class } : {},
       },
     }
   },
@@ -35,7 +48,8 @@ const CustomImage = Image.extend({
 const Viewer = ({ content }: { content: any }) => {
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({ blockquote: false }),
+      StarterKit.configure({ blockquote: false, paragraph: false }),
+      CustomParagraph,
       CustomBlockquote,
       Underline,
       CustomImage, 
@@ -46,7 +60,7 @@ const Viewer = ({ content }: { content: any }) => {
     immediatelyRender: false,
     editorProps: {
       attributes: {
-        class: 'prose prose-invert max-w-none text-[#E0E0E0] font-serif leading-loose tracking-wide',
+        class: 'prose prose-invert max-w-none text-[#E0E0E0] font-serif leading-loose tracking-wide mednexus-content-grid pb-32',
       },
     },
   });
