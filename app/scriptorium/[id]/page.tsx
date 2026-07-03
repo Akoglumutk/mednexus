@@ -150,7 +150,7 @@ export default function NoteDetail() {
       </div>
 
       {/* FIXED FOOTER COMMA MAND CENTER */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-[#010102]/95 border-t border-t-white/5 p-4 backdrop-blur-md z-40 font-mono">
+      <footer className="fixed bottom-0 left-0 right-0 bg-[#010102]/95 border-t border-t-white/5 p-4 backdrop-blur-md z-40 font-mono pt-4">
         <div className="max-w-4xl mx-auto flex justify-between items-center gap-4">
           {isEditing ? (
             <div className="flex w-full justify-between items-center px-2">
